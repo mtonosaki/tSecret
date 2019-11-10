@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="tSecret.NoteListPage"
+             NavigationPage.HasBackButton="False" >
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:Name="ShowAllButton"
+                     Text="Active"
+                     Clicked="OnShowAllClicked">
+            <ToolbarItem.IconImageSource>
+                <OnPlatform x:TypeArguments="FileImageSource">
+                    <On Platform="UWP" Value="cc_btn_checked0.png" />
+                </OnPlatform>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+        <ToolbarItem Text="↓Sync↑" Clicked="OnCloudSync">
+            <ToolbarItem.IconImageSource>
+                <OnPlatform x:TypeArguments="FileImageSource">
+                    <On Platform="UWP" Value="cc_btn_sync.png" />
+                </OnPlatform>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+        <ToolbarItem Text="New" Clicked="OnNoteAddedClicked">
+            <ToolbarItem.IconImageSource>
+                <OnPlatform x:TypeArguments="FileImageSource">
+                    <On Platform="UWP" Value="cc_btn_new.png" />
+                </OnPlatform>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="NoteLiteTemplate">
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal">
+                        <Label Text="{Binding Caption}"
+                               TextColor="{Binding RecordTextColor}"
+                               FontAttributes="Bold" />
+                        <Label Text="{Binding AccountID}"
+                               FontSize="Micro" TextColor="#ff88ff" 
+                               Margin="4,0,8,0"
+                               HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                    <ViewCell.ContextActions>
+                        <MenuItem Text="ID"
+                                  IsDestructive="False"
+                                  CommandParameter="{Binding .}"
+                                  Clicked="OnCopyIdClicked"/>
+                        <MenuItem Text="PW"
+                                  IsDestructive="True"
+                                  CommandParameter="{Binding .}"
+                                  Clicked="OnCopyPwClicked"/>
+                    </ViewCell.ContextActions>
+                </ViewCell>
+            </DataTemplate>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <RelativeLayout x:Name="RLayout"
+                VerticalOptions="FillAndExpand"
+                HorizontalOptions="FillAndExpand">
+            <StackLayout
+                RelativeLayout.XConstraint="{ConstraintExpression Type=Constant, Constant=0}"
+                RelativeLayout.YConstraint="{ConstraintExpression Type=Constant, Constant=0}"
+                RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width}"
+                RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height}">
+                <ListView x:Name="listView"
+                          Margin="20,8,2,8"
+                          VerticalOptions="FillAndExpand"
+                          GroupDisplayBinding="{Binding Rubi1}"
+                          GroupShortNameBinding="{Binding Rubi1}"
+                          IsGroupingEnabled ="True"
+                          ItemTemplate="{StaticResource NoteLiteTemplate}"
+                          SelectionMode="Single"
+                          ItemSelected="OnListViewItemSelected">
+                </ListView>
+                <Label x:Name="StatusBar"
+                       HorizontalOptions="StartAndExpand"
+                       VerticalOptions="End"
+                   Text="tSecret (c)2019 Manabu Tonosaki.">
+                    <Label.Margin>
+                        <OnPlatform x:TypeArguments="Thickness">
+                            <On Platform="iOS" Value="8,2,2,32" />
+                            <On Platform="Android" Value="8,2,2,8" />
+                            <On Platform="UWP" Value="8,2,2,8" />
+                        </OnPlatform>
+                    </Label.Margin>
+                </Label>
+            </StackLayout>
+            <StackLayout 
+                BackgroundColor="Black" 
+                Opacity="0.5"
+                x:Name="Kurukuru"
+                IsVisible="False"
+                d:IsVisible="False"
+                RelativeLayout.XConstraint="{ConstraintExpression Type=Constant, Constant=0}"
+                RelativeLayout.YConstraint="{ConstraintExpression Type=Constant, Constant=0}"
+                RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width}"
+                RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height}">
+                <ActivityIndicator 
+                    x:Name="Progress"
+                    IsVisible="False"
+                    d:IsVisible="False"
+                    IsRunning="True"
+                    Color="White"
+                    VerticalOptions="CenterAndExpand"
+                    HorizontalOptions="CenterAndExpand" />
+            </StackLayout>
+        </RelativeLayout>
+    </ContentPage.Content>
+</ContentPage>

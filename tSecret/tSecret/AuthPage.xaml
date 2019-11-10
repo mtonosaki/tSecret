@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="tSecret.AuthPage"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="#e4007f">
+    <ContentPage.Content>
+        <StackLayout>
+            <Image Source="icon256.png"
+                   HorizontalOptions="FillAndExpand"
+                   Margin="0,48,0,0"
+                   VerticalOptions="Start"/>
+            <Label Text="Managed your secret w/ tSecret"
+                   TextColor="White"
+                   VerticalOptions="Center" 
+                   HorizontalOptions="CenterAndExpand" />
+            <Button x:Name="StartButton"
+                    IsEnabled="True"
+                    Text="AUTHENTICATE"
+                    TextColor="Yellow"
+                    FontAttributes="Bold"
+                    FontSize="22"
+                    VerticalOptions="Start"
+                    Margin="0, 16, 0, 16"
+                    Clicked="OnStartClicked"
+                    HorizontalOptions="Center"/>
+            <Label x:Name="ErrorMessage"
+                   IsVisible="False"
+                   d:IsVisible="True"
+                   HorizontalOptions="Center"
+                   VerticalOptions="StartAndExpand"
+                   Text="Authentication error" />
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
