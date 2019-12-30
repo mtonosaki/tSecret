@@ -1,4 +1,4 @@
-﻿namespace tSecret
+﻿namespace tSecretCommon
 {
     public class SecretParameterBase
     {
