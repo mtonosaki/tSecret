@@ -8,14 +8,14 @@
 
   <Identity
     Name="d2d05955-dc57-4646-b31c-5fd9d8cc6b33"
-    Publisher="CN=戸ノ崎学"
+    Publisher="CN=ManabuTonosaki"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="d2d05955-dc57-4646-b31c-5fd9d8cc6b33" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>tSecretUwp</DisplayName>
-    <PublisherDisplayName>戸ノ崎学</PublisherDisplayName>
+    <PublisherDisplayName>Manabu Tonosaki</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -32,13 +32,16 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="tSecretUwp.App">
       <uap:VisualElements
-        DisplayName="tSecretUwp"
+        DisplayName="tSecret-u"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="tSecretUwp"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:InitialRotationPreference>
+          <uap:Rotation Preference="portrait"/>
+          <uap:Rotation Preference="portraitFlipped"/></uap:InitialRotationPreference>
       </uap:VisualElements>
     </Application>
   </Applications>
