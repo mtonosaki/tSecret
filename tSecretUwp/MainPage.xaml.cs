@@ -26,5 +26,10 @@ namespace tSecretUwp
         {
             this.InitializeComponent();
         }
+
+        private void List_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+
+        }
     }
 }

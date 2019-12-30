@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using tSecret.Models;
+using tSecretCommon.Models;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 

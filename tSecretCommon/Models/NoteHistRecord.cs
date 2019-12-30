@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace tSecret.Models
+namespace tSecretCommon.Models
 {
     /// <summary>
     /// Record of History

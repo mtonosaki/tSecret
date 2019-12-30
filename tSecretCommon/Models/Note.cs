@@ -4,9 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using Tono;
-using Xamarin.Forms;
 
-namespace tSecret.Models
+namespace tSecretCommon.Models
 {
     /// <summary>
     /// Model data : Record of Note
@@ -188,23 +187,6 @@ namespace tSecret.Models
             get => DbUtil.ToBoolean(this["IsDeleted"]);
             set => this["IsDeleted"] = value.ToString();
         }
-
-        [IgnoreDataMember]
-        public Color RecordTextColor
-        {
-            get
-            {
-                if (IsDeleted)
-                {
-                    return Color.LightGray;
-                }
-                else
-                {
-                    return Color.Black;
-                }
-            }
-        }
-
 
         [IgnoreDataMember]
         public string Memo

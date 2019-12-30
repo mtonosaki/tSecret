@@ -10,7 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Tono;
-using tSecret.Models;
+using tSecretCommon.Models;
 
 namespace tSecret
 {

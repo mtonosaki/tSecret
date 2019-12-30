@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Tono;
-using tSecret.Models;
+using tSecretCommon.Models;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -18,6 +18,7 @@ namespace tSecret
             InitializeComponent();
             listView.Refreshing += OnCloudSyncByListViewRefresh;
             listView.IsPullToRefreshEnabled = true;
+            var aaa = listView.BackgroundColor;
 
             MessagingCenter.Subscribe<IKeyboardListener, string>(this, "KeyboardListener", OnKeyDown);
         }

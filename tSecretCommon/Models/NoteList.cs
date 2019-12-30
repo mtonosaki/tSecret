@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using Tono;
 
-namespace tSecret.Models
+namespace tSecretCommon.Models
 {
     public class NoteList
     {
