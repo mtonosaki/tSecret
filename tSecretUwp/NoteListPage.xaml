@@ -3,12 +3,63 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:tSecretUwp"
+    xmlns:mo="using:tSecretCommon.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
     <Grid>
-        <TextBlock Text="HELLO" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{ThemeResource AppBarExpandButtonThemeWidthGridLength}" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="24" />
+        </Grid.RowDefinitions>
+        <CommandBar
+            Grid.Row="0"
+            Background="Transparent" 
+            IsOpen="False"
+            DefaultLabelPosition="Right">
+            <AppBarToggleButton x:Name="ShowDeleted" Icon="ShowResults" Label="Show Deleted" Style="{StaticResource AppBarToggleButtonRevealStyle}" />
+            <AppBarButton Icon="Sync" Label="Sync" Click="Button_Sync_Click"/>
+            <AppBarButton Icon="Add" Label="New"/>
+        </CommandBar>
+
+        <ListView
+            x:Name="lvMain"
+            Grid.Row="1"
+            CanReorderItems="True"
+            AllowDrop="True"
+            IsMultiSelectCheckBoxEnabled="False"
+            SingleSelectionFollowsFocus="True"
+            IsDoubleTapEnabled="True"
+            DoubleTapped="lvMain_DoubleTapped">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="mo:Note">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Text="{Binding Caption}"
+                            HorizontalAlignment="Left"
+                            FontSize="15" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Text="{Binding AccountID}"
+                            Foreground="#ff88ff"
+                            Margin="8,0,0,8"
+                            FontSize="13" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <TextBlock
+            x:Name="StatusBar"
+            Text="Starting tSecret..."
+            Foreground="Gray"
+            Margin="8,0,0,0"
+            Grid.Row="2" />
     </Grid>
 </Page>

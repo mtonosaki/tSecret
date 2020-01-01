@@ -62,7 +62,7 @@ namespace tSecretCommon
         /// <returns></returns>
         public async Task<NoteList> Sync()
         {
-            await Task.Delay(2000);
+            await Task.Delay(700);
 
             var cloud = await Download();
             if (cloud == null || cloud.Notes == null || cloud.Notes.Count == 0)

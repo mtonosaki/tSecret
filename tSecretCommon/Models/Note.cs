@@ -134,7 +134,11 @@ namespace tSecretCommon.Models
         public string Caption
         {
             get => this["Caption"];
-            set => this["Caption"] = value;
+            set
+            {
+                this["Caption"] = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Caption"));
+            }
         }
 
         /// <summary>
@@ -150,7 +154,11 @@ namespace tSecretCommon.Models
         public string CaptionRubi
         {
             get => this["CaptionRubi"];
-            set => this["CaptionRubi"] = value;
+            set
+            {
+                this["CaptionRubi"] = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CaptionRubi"));
+            }
         }
 
         /// <summary>
@@ -163,7 +171,11 @@ namespace tSecretCommon.Models
         public string AccountID
         {
             get => this["AccountID"];
-            set => this["AccountID"] = value;
+            set
+            {
+                this["AccountID"] = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("AccountID"));
+            }
         }
         [IgnoreDataMember]
         public IEnumerable<NoteHistRecord> AccountIDHistory => UniversalData.GetValueOrDefault("AccountID", true, k => new List<NoteHistRecord>()).OrderByDescending(a => a.DT);
@@ -172,27 +184,43 @@ namespace tSecretCommon.Models
         public string Password
         {
             get => this["Password"];
-            set => this["Password"] = value;
+            set
+            {
+                this["Password"] = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Password"));
+            }
         }
         [IgnoreDataMember]
         public string Email
         {
             get => this["Email"];
-            set => this["Email"] = value;
+            set
+            {
+                this["Email"] = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Email"));
+            }
         }
 
         [IgnoreDataMember]
         public bool IsDeleted
         {
             get => DbUtil.ToBoolean(this["IsDeleted"]);
-            set => this["IsDeleted"] = value.ToString();
+            set
+            {
+                this["IsDeleted"] = value.ToString();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsDeleted"));
+            }
         }
 
         [IgnoreDataMember]
         public string Memo
         {
             get => this["Memo"];
-            set => this["Memo"] = value;
+            set
+            {
+                this["Memo"] = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Memo"));
+            }
         }
 
         [IgnoreDataMember]
@@ -205,7 +233,11 @@ namespace tSecretCommon.Models
         public DateTime CreatedDateTime
         {
             get => DbUtil.ToDateTime(this["CreatedDateTime", DateTime.Now.ToString(TimeUtil.FormatYMDHMS)]);
-            set => this["CreatedDateTime"] = value.ToString(TimeUtil.FormatYMDHMS);
+            set
+            {
+                this["CreatedDateTime"] = value.ToString(TimeUtil.FormatYMDHMS);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CreatedDateTime"));
+            }
         }
     }
 }

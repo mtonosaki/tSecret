@@ -19,7 +19,6 @@ namespace tSecret
             InitializeComponent();
             listView.Refreshing += OnCloudSyncByListViewRefresh;
             listView.IsPullToRefreshEnabled = true;
-            var aaa = listView.BackgroundColor;
 
             MessagingCenter.Subscribe<IKeyboardListener, string>(this, "KeyboardListener", OnKeyDown);
         }

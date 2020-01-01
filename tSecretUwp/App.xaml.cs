@@ -33,7 +33,7 @@ namespace tSecretUwp
             }
 
             if (e.PrelaunchActivated == false)
-            {
+            { 
                 if (rootFrame.Content == null)
                 {
                     rootFrame.Navigate(typeof(AuthPage), e.Arguments);
