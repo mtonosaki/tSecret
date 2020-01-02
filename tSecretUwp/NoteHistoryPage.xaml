@@ -1,0 +1,85 @@
+﻿<Page
+    x:Class="tSecretUwp.NoteHistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:tSecretUwp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <CommandBar>
+            <CommandBar.Content>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalAlignment="Top" Click="BackButton_Click"/>
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="LightGray" Text="Secret history"/>
+                </Grid>
+            </CommandBar.Content>
+        </CommandBar>
+
+        <!--Caption-->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Background="#22888888">
+            <Rectangle Width="6" Height="6" Fill="LightGray" Margin="4,0,6,0" />
+            <TextBlock Text="Caption" FontWeight="Bold" />
+        </StackPanel>
+        <StackPanel x:Name="Captions" Grid.Row="2" Margin="8,0,8,0">
+            <Grid>
+                <TextBox HorizontalAlignment="Left" Text="aaaaaaaaaaaaaaaa" BorderThickness="0" IsReadOnly="True" IsTextPredictionEnabled="False" />
+                <TextBlock HorizontalAlignment="Right" Text="2019/02/25 12:23:34" />
+            </Grid>
+        </StackPanel>
+
+        <!--Account ID-->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Background="#22888888">
+            <Rectangle Width="6" Height="6" Fill="LightCyan" Margin="4,0,6,0" />
+            <TextBlock Text="Account ID" FontWeight="Bold" />
+        </StackPanel>
+        <StackPanel x:Name="Accounts" Grid.Row="4" Margin="8,0,8,0">
+            <Grid>
+                <TextBox HorizontalAlignment="Left" Text="aaaaaaaaaaaaaaaa" BorderThickness="0" IsReadOnly="True" IsTextPredictionEnabled="False" />
+                <TextBlock HorizontalAlignment="Right" Text="2019/02/25 12:23:34" />
+            </Grid>
+        </StackPanel>
+
+        <!--Password-->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" Background="#22888888">
+            <Rectangle Width="6" Height="6" Fill="LightPink" Margin="4,0,6,0" />
+            <TextBlock Text="Password" FontWeight="Bold" />
+        </StackPanel>
+        <StackPanel x:Name="Passwords" Grid.Row="6" Margin="8,0,8,0">
+            <Grid>
+                <TextBox HorizontalAlignment="Left" Text="aaaaaaaaaaaaaaaa" BorderThickness="0" IsReadOnly="True" IsTextPredictionEnabled="False" />
+                <TextBlock HorizontalAlignment="Right" Text="2019/02/25 12:23:34" />
+            </Grid>
+        </StackPanel>
+
+        <!--Email-->
+        <StackPanel Grid.Row="7" Orientation="Horizontal" Background="#22888888">
+            <Rectangle Width="6" Height="6" Fill="Yellow" Margin="4,0,6,0" />
+            <TextBlock Text="Email" FontWeight="Bold" />
+        </StackPanel>
+        <StackPanel x:Name="Emails" Grid.Row="8" Margin="8,0,8,0">
+            <Grid>
+                <TextBox HorizontalAlignment="Left" Text="aaaaaaaaaaaaaaaa" BorderThickness="0" IsReadOnly="True" IsTextPredictionEnabled="False" />
+                <TextBlock HorizontalAlignment="Right" Text="2019/02/25 12:23:34" />
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Page>

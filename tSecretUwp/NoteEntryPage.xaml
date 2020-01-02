@@ -17,6 +17,7 @@
             <ColumnDefinition Width="32"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="24" />
             <RowDefinition Height="42" />
             <RowDefinition Height="42" />
@@ -31,110 +32,91 @@
             <RowDefinition Height="16" />
             <RowDefinition Height="24" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="64" />
+            <RowDefinition Height="24" />
         </Grid.RowDefinitions>
+
+        <CommandBar Grid.ColumnSpan="5" Margin="-8,-8,-8,8" DefaultLabelPosition="Right">
+            <CommandBar.Content>
+                <Button Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalAlignment="Top" Click="BackButton_Click"/>
+            </CommandBar.Content>
+            <AppBarToggleButton Icon="Delete" Label="Deleted" IsChecked="{x:Bind Note.IsDeleted, Mode=TwoWay}" />
+            <AppBarButton Icon="List" Label="History" Click="History_Click" />
+        </CommandBar>
+
+
         <!--CAPTION-->
-        <TextBlock Text="Record Caption" Grid.ColumnSpan="3" FontWeight="Bold" />
-        <Rectangle Grid.Row="1" Grid.Column="0" Width="6" Height="6" Fill="LightGray" />
-        <TextBlock Grid.Row="1" Grid.Column="1" Text="Rubi" VerticalAlignment="Center" />
-        <TextBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,5,0,5" Text="{x:Bind Note.CaptionRubi,Mode=TwoWay}" />
-
+        <TextBlock Grid.Row="1" Text="Record Caption" Grid.ColumnSpan="3" FontWeight="Bold" />
         <Rectangle Grid.Row="2" Grid.Column="0" Width="6" Height="6" Fill="LightGray" />
-        <TextBlock Grid.Row="2" Grid.Column="1" Text="Caption" VerticalAlignment="Center" />
-        <TextBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,5,0,5"  Text="{x:Bind Note.Caption,Mode=TwoWay}" />
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="Rubi" VerticalAlignment="Center" />
+        <TextBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,5,0,5" Text="{x:Bind Note.CaptionRubi,Mode=TwoWay}" />
 
-        <Rectangle Grid.Row="3" Grid.ColumnSpan="5" Height="1" Fill="LightGray" />
+        <Rectangle Grid.Row="3" Grid.Column="0" Width="6" Height="6" Fill="LightGray" />
+        <TextBlock Grid.Row="3" Grid.Column="1" Text="Caption" VerticalAlignment="Center" />
+        <TextBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,5,0,5"  Text="{x:Bind Note.Caption,Mode=TwoWay}" />
+
+        <Rectangle Grid.Row="4" Grid.ColumnSpan="5" Height="1" Fill="LightGray" />
 
         <!--Account ID-->
-        <TextBlock Grid.Row="4" Grid.ColumnSpan="3" Text="Account ID" FontWeight="Bold" />
-        <Rectangle Grid.Row="5" Grid.Column="0" Width="6" Height="6" Fill="LightCyan"  />
-        <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,5"  Text="{x:Bind Note.AccountID,Mode=TwoWay}" />
-        <Button Grid.Row="5" Grid.Column="4" Background="Transparent" Click="CopyAccount_Click">
+        <TextBlock Grid.Row="5" Grid.ColumnSpan="3" Text="Account ID" FontWeight="Bold" />
+        <Rectangle Grid.Row="6" Grid.Column="0" Width="6" Height="6" Fill="LightCyan"  />
+        <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,5"  Text="{x:Bind Note.AccountID,Mode=TwoWay}" />
+        <Button Grid.Row="6" Grid.Column="4" Background="Transparent" Click="CopyAccount_Click">
             <Button.Content>
                 <FontIcon Glyph="&#xE16f;" FontSize="20" FontFamily="Segoe MDL2 Assets" Margin="-4,-4,-4,-4" />
             </Button.Content>
         </Button>
-        <TextBlock Grid.Row="4" Grid.ColumnSpan="5" x:Name="CopiedAccount" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="[ACCOUNT ID] is copied to clipboard" FontSize="12" Foreground="Pink" Visibility="Collapsed" />
+        <TextBlock Grid.Row="5" Grid.ColumnSpan="5" x:Name="CopiedAccount" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="[ACCOUNT ID] is copied to clipboard" FontSize="12" Foreground="Pink" Visibility="Collapsed" />
 
         <!--Password-->
-        <TextBlock Grid.Row="6" Grid.ColumnSpan="3" Text="Password" FontWeight="Bold" />
-        <Rectangle Grid.Row="7" Grid.Column="0" Width="6" Height="6" Fill="LightPink"  />
-        <PasswordBox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" x:Name="PasswordHide" Margin="0,5,0,5" Password="{x:Bind Note.Password, Mode=TwoWay}" />
-        <TextBox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" x:Name="PasswordShow" Margin="0,5,0,5" Text="{x:Bind Note.Password, Mode=TwoWay}" Visibility="Collapsed" />
-        <Button Grid.Row="7" Grid.Column="3" Background="Transparent" Click="ShowPassword_Click">
+        <TextBlock Grid.Row="7" Grid.ColumnSpan="3" Text="Password" FontWeight="Bold" />
+        <Rectangle Grid.Row="8" Grid.Column="0" Width="6" Height="6" Fill="LightPink"  />
+        <PasswordBox Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" x:Name="PasswordHide" Margin="0,5,0,5" Password="{x:Bind Note.Password, Mode=TwoWay}" />
+        <TextBox Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" x:Name="PasswordShow" Margin="0,5,0,5" Text="{x:Bind Note.Password, Mode=TwoWay}" Visibility="Collapsed" />
+        <Button Grid.Row="8" Grid.Column="3" Background="Transparent" Click="ShowPassword_Click">
             <Button.Content>
                 <FontIcon x:Name="PasswordVisibleMode" Glyph="&#xE1f6;" FontSize="20" FontFamily="Segoe MDL2 Assets" Margin="-4,-4,-4,-4" />
             </Button.Content>
         </Button>
-        <Button Grid.Row="7" Grid.Column="4" Background="Transparent" Click="CopyPassword_Click">
+        <Button Grid.Row="8" Grid.Column="4" Background="Transparent" Click="CopyPassword_Click">
             <Button.Content>
                 <FontIcon Glyph="&#xE16f;" FontSize="20" FontFamily="Segoe MDL2 Assets" Margin="-4,-4,-4,-4" />
             </Button.Content>
         </Button>
-        <TextBlock Grid.Row="6" Grid.ColumnSpan="5" x:Name="CopiedPassword" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="[PASSWORD] is copied to clipboard" FontSize="12" Foreground="Pink"  Visibility="Collapsed" />
+        <TextBlock Grid.Row="7" Grid.ColumnSpan="5" x:Name="CopiedPassword" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="[PASSWORD] is copied to clipboard" FontSize="12" Foreground="Pink"  Visibility="Collapsed" />
 
-        <Rectangle Grid.Row="8" Grid.ColumnSpan="5" Height="1" Fill="LightGray" />
+        <Rectangle Grid.Row="9" Grid.ColumnSpan="5" Height="1" Fill="LightGray" />
 
         <!--Email-->
-        <TextBlock Grid.Row="9" Grid.ColumnSpan="3" Text="Email" FontWeight="Bold" />
-        <Rectangle Grid.Row="10" Grid.Column="0" Width="6" Height="6" Fill="Yellow"  />
-        <TextBox Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,5"  Text="{x:Bind Note.Email,Mode=TwoWay}" />
-        <Button Grid.Row="10" Grid.Column="4" Background="Transparent" Click="CopyEmail_Click">
+        <TextBlock Grid.Row="10" Grid.ColumnSpan="3" Text="Email" FontWeight="Bold" />
+        <Rectangle Grid.Row="11" Grid.Column="0" Width="6" Height="6" Fill="Yellow"  />
+        <TextBox Grid.Row="11" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,5"  Text="{x:Bind Note.Email,Mode=TwoWay}" />
+        <Button Grid.Row="11" Grid.Column="4" Background="Transparent" Click="CopyEmail_Click">
             <Button.Content>
                 <FontIcon Glyph="&#xE16f;" FontSize="20" FontFamily="Segoe MDL2 Assets" Margin="-4,-4,-4,-4" />
             </Button.Content>
         </Button>
-        <TextBlock Grid.Row="9" Grid.ColumnSpan="5" x:Name="CopiedEmail" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="[EMAIL] is copied to clipboard" FontSize="12" Foreground="Pink" Visibility="Collapsed"/>
+        <TextBlock Grid.Row="10" Grid.ColumnSpan="5" x:Name="CopiedEmail" HorizontalAlignment="Right" VerticalAlignment="Bottom" Text="[EMAIL] is copied to clipboard" FontSize="12" Foreground="Pink" Visibility="Collapsed"/>
 
-        <Rectangle Grid.Row="11" Grid.ColumnSpan="5" Height="1" Fill="LightGray" />
+        <Rectangle Grid.Row="12" Grid.ColumnSpan="5" Height="1" Fill="LightGray" />
 
         <!--Memo-->
-        <TextBlock Grid.Row="12" Grid.ColumnSpan="3" Text="Memo" FontWeight="Bold" />
-        <Rectangle Grid.Row="13" Grid.Column="0" VerticalAlignment="Top" Width="6" Height="6" Fill="LightGreen" Margin="0,8,0,0" />
+        <TextBlock Grid.Row="13" Grid.ColumnSpan="3" Text="Memo" FontWeight="Bold" />
+        <Rectangle Grid.Row="14" Grid.Column="0" VerticalAlignment="Top" Width="6" Height="6" Fill="LightGreen" Margin="0,8,0,0" />
         <TextBox
-            Grid.Row="13" Grid.Column="1" Grid.ColumnSpan="4"
+            Grid.Row="14" Grid.Column="1" Grid.ColumnSpan="4"
             ScrollViewer.HorizontalScrollMode="Enabled"
             ScrollViewer.HorizontalScrollBarVisibility="Auto"
             ScrollViewer.VerticalScrollMode="Enabled"
             ScrollViewer.VerticalScrollBarVisibility="Visible"
-            CanBeScrollAnchor="True"
             AcceptsReturn="True"
             TextWrapping="NoWrap"
             IsSpellCheckEnabled="False"
-            SelectionHighlightColor="LightGray"
             Text="{x:Bind Note.Memo,Mode=TwoWay}"/>
         
         <!--BUTTONS-->
-        <Grid Grid.Row="14"
-              Grid.ColumnSpan="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="140" />
-                <ColumnDefinition Width="140" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="16" />
-            </Grid.RowDefinitions>
-            <Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" Style="{StaticResource AccentButtonStyle}" Click="OK_Click">
-                <Button.Content>
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xE179;" FontSize="16" FontFamily="Segoe MDL2 Assets" Margin="0,0,4,0"  />
-                        <TextBlock Text="Back to list" />
-                    </StackPanel>
-                </Button.Content>
-            </Button>
-            <Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Style="{StaticResource ButtonRevealStyle}" Click="History_Click">
-                <Button.Content>
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xE15f;" FontSize="16" FontFamily="Segoe MDL2 Assets" Margin="0,0,4,0" />
-                        <TextBlock Text="History" />
-                    </StackPanel>
-                </Button.Content>
-            </Button>
-            <CheckBox Grid.Row="0" Grid.Column="0" Content="Deleted" Margin="16,0,0,0" IsChecked="{x:Bind Note.IsDeleted}" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" FontSize="10" Text="{x:Bind Note.ID, Mode=OneTime}" Foreground="Gray" />
-            <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" FontSize="10" Text="{x:Bind Note.CreatedDateTime, Mode=OneTime}"  Foreground="Gray" />
+        <Grid Grid.Row="15" Grid.ColumnSpan="5">
+            <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="10" Text="{x:Bind Note.ID, Mode=OneTime}" Foreground="Gray" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Text="{x:Bind Note.CreatedDateTime, Mode=OneTime}"  Foreground="Gray" />
         </Grid>
     </Grid>
 </Page>

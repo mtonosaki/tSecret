@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
 // 空白ページの項目テンプレートについては、https://go.microsoft.com/fwlink/?LinkId=234238 を参照してください
@@ -30,11 +31,18 @@ namespace tSecretUwp
         public AuthPage()
         {
             this.InitializeComponent();
+        }
 
-            DelayUtil.Start(TimeSpan.FromMilliseconds(97), () =>
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if( e.NavigationMode == NavigationMode.New)
             {
-                var dmy = AuthenticateAsync();
-            });
+                DelayUtil.Start(TimeSpan.FromMilliseconds(97), () =>
+                {
+                    var dmy = AuthenticateAsync();
+                });
+            }
+            base.OnNavigatedTo(e);
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
@@ -54,7 +62,10 @@ namespace tSecretUwp
                 {
                     case UserConsentVerificationResult.Verified:
                         ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
-                        this.Frame.Navigate(typeof(NoteListPage));
+                        this.Frame.Navigate(typeof(NoteListPage), null, new SlideNavigationTransitionInfo
+                        {
+                            Effect = SlideNavigationTransitionEffect.FromRight,
+                        });
                         return true;
                     default:
                         ErrorMessage.Text = "Authentication error";

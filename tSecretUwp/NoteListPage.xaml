@@ -24,9 +24,11 @@
         <CommandBar
             Grid.Row="0"
             Grid.ColumnSpan="2"
-            Background="Transparent" 
             IsOpen="False"
             DefaultLabelPosition="Right">
+            <CommandBar.Content>
+                <Button Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalAlignment="Top" Click="BackButton_Click"/>
+            </CommandBar.Content>
             <AppBarToggleButton x:Name="ShowDeleted" Icon="ShowResults" Label="Show Deleted" Style="{StaticResource AppBarToggleButtonRevealStyle}" Click="ShowDeleted_Click" />
             <AppBarButton Icon="Sync" Label="Sync" Click="Button_Sync_Click"/>
             <AppBarButton Icon="Add" Label="New"/>
@@ -62,7 +64,7 @@
                             FontSize="13" />
                         <Rectangle
                             Visibility="{x:Bind IsDeleted, Converter={StaticResource B2V}, Mode=OneWay}"
-                            Grid.Row="0" Height="1" Fill="#88ff0000">
+                            Grid.Row="0" Height="2" Fill="#88ff0000">
                         </Rectangle>
                     </Grid>
                 </DataTemplate>

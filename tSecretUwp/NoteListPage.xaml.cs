@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
 namespace tSecretUwp
@@ -53,7 +54,7 @@ namespace tSecretUwp
             IndexButtons.Children.Clear();
             foreach (var rubi1 in NotePersister.Current
                                     .Select(a => a.CaptionRubi1)
-                                    .Where( a => a != "@")
+                                    .Where(a => a != "@")
                                     .Distinct()
                                     .OrderBy(a => a[0]))
             {
@@ -67,7 +68,7 @@ namespace tSecretUwp
                     Foreground = new SolidColorBrush(Colors.Magenta),
                     Background = new SolidColorBrush(Colors.Transparent),
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    ClickMode = ClickMode.Hover,
+                    ClickMode = ClickMode.Press,
                 });
                 btn.Click += Index_Click;
             }
@@ -152,12 +153,27 @@ namespace tSecretUwp
         /// <param name="e"></param>
         private void lvMain_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            Frame.Navigate(typeof(NoteEntryPage), lvMain.SelectedItem);
+            Frame.Navigate(typeof(NoteEntryPage), lvMain.SelectedItem, new SlideNavigationTransitionInfo
+            {
+                Effect = SlideNavigationTransitionEffect.FromRight,
+            });
         }
 
         private void ShowDeleted_Click(object sender, RoutedEventArgs e)
         {
             Refresh();
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Frame.CanGoBack)
+            {
+                Frame.GoBack();
+            }
+            else
+            {
+                Frame.Navigate(typeof(AuthPage));
+            }
         }
     }
 }
