@@ -211,7 +211,7 @@ namespace tSecretCommon
         /// Load for preparing
         /// </summary>
         /// <returns></returns>
-        private void Load()
+        public void Load()
         {
             if (dat != null)
             {
@@ -252,7 +252,7 @@ namespace tSecretCommon
         /// Save the all note data
         /// </summary>
         /// <returns></returns>
-        private void Save()
+        public void Save()
         {
             if (dat == null)
             {

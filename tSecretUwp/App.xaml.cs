@@ -1,4 +1,5 @@
 ﻿using System;
+using tSecretCommon;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
@@ -25,10 +26,7 @@ namespace tSecretUwp
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
-                if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
-                {
-                    //TODO: resume from previous suspend
-                }
+                NotePersister.Current.Load();
                 Window.Current.Content = rootFrame;
             }
 
@@ -49,6 +47,7 @@ namespace tSecretUwp
 
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
+            NotePersister.Current.Save();
             var deferral = e.SuspendingOperation.GetDeferral();
             deferral.Complete();
         }

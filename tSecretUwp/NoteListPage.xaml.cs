@@ -9,6 +9,7 @@ using tSecretCommon;
 using tSecretCommon.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -39,7 +40,7 @@ namespace tSecretUwp
         private void Refresh()
         {
             var dat = new ObservableCollection<Note>();
-            foreach (Note note in NotePersister.Current
+            foreach (var note in NotePersister.Current
                                     .Where(rec => IsShowAll || rec.IsDeleted == false)
                                     .OrderBy(rec => $"{rec.CaptionRubi1}--{rec.CaptionRubi}")
             )
@@ -47,6 +48,45 @@ namespace tSecretUwp
                 dat.Add(note);
             }
             lvMain.ItemsSource = dat;
+
+            // Make index buttons
+            IndexButtons.Children.Clear();
+            foreach (var rubi1 in NotePersister.Current
+                                    .Select(a => a.CaptionRubi1)
+                                    .Where( a => a != "@")
+                                    .Distinct()
+                                    .OrderBy(a => a[0]))
+            {
+                Button btn;
+                IndexButtons.Children.Add(btn = new Button
+                {
+                    Content = rubi1,
+                    FontSize = 12,
+                    Height = 28,
+                    Margin = new Thickness { Left = -6, Top = -6, Right = -6, Bottom = -6 },
+                    Foreground = new SolidColorBrush(Colors.Magenta),
+                    Background = new SolidColorBrush(Colors.Transparent),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    ClickMode = ClickMode.Hover,
+                });
+                btn.Click += Index_Click;
+            }
+        }
+
+        private void Index_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Content is string caption)
+            {
+                for (var i = 0; i < lvMain.Items.Count; i++)
+                {
+                    var item = lvMain.Items[i] as Note;
+                    if (item?.CaptionRubi1 == caption)
+                    {
+                        lvMain.ScrollIntoView(item, ScrollIntoViewAlignment.Leading);
+                        return;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -85,10 +125,12 @@ namespace tSecretUwp
 
         private void KurukuruIn()
         {
+            Kurukuru.Visibility = Visibility.Visible;
         }
 
         private void KurukuruOut()
         {
+            Kurukuru.Visibility = Visibility.Collapsed;
         }
 
         private void log(string str)
@@ -111,6 +153,11 @@ namespace tSecretUwp
         private void lvMain_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             Frame.Navigate(typeof(NoteEntryPage), lvMain.SelectedItem);
+        }
+
+        private void ShowDeleted_Click(object sender, RoutedEventArgs e)
+        {
+            Refresh();
         }
     }
 }

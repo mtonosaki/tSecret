@@ -8,18 +8,26 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <local:Boolean2VisibilityConverter x:Key="B2V" />
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="{ThemeResource AppBarExpandButtonThemeWidthGridLength}" />
             <RowDefinition Height="*" />
             <RowDefinition Height="24" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20" />
+        </Grid.ColumnDefinitions>
         <CommandBar
             Grid.Row="0"
+            Grid.ColumnSpan="2"
             Background="Transparent" 
             IsOpen="False"
             DefaultLabelPosition="Right">
-            <AppBarToggleButton x:Name="ShowDeleted" Icon="ShowResults" Label="Show Deleted" Style="{StaticResource AppBarToggleButtonRevealStyle}" />
+            <AppBarToggleButton x:Name="ShowDeleted" Icon="ShowResults" Label="Show Deleted" Style="{StaticResource AppBarToggleButtonRevealStyle}" Click="ShowDeleted_Click" />
             <AppBarButton Icon="Sync" Label="Sync" Click="Button_Sync_Click"/>
             <AppBarButton Icon="Add" Label="New"/>
         </CommandBar>
@@ -27,6 +35,7 @@
         <ListView
             x:Name="lvMain"
             Grid.Row="1"
+            Grid.ColumnSpan="1"
             CanReorderItems="True"
             AllowDrop="True"
             IsMultiSelectCheckBoxEnabled="False"
@@ -51,15 +60,33 @@
                             Foreground="#ff88ff"
                             Margin="8,0,0,8"
                             FontSize="13" />
+                        <Rectangle
+                            Visibility="{x:Bind IsDeleted, Converter={StaticResource B2V}, Mode=OneWay}"
+                            Grid.Row="0" Height="1" Fill="#88ff0000">
+                        </Rectangle>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <StackPanel
+            x:Name="IndexButtons"
+            Grid.Row="1"
+            Grid.Column="1"
+            VerticalAlignment="Center">
+            <Button Content="A" Height="32" FontSize="12" HorizontalAlignment="Center" Margin="-6,-8,-6,-8" Foreground="Magenta" Background="Transparent" />
+            <Button Content="B" Height="32" FontSize="12" HorizontalAlignment="Center" Margin="-6,-8,-6,-8" Foreground="Magenta" Background="Transparent" />
+            <Button Content="C" Height="32" FontSize="12" HorizontalAlignment="Center" Margin="-6,-8,-6,-8" Foreground="Magenta" Background="Transparent" />
+            <Button Content="わ" Height="32" FontSize="12" HorizontalAlignment="Center" Margin="-6,-8,-6,-8" Foreground="Magenta" Background="Transparent" />
+        </StackPanel>
         <TextBlock
             x:Name="StatusBar"
+            Grid.ColumnSpan="2"
             Text="Starting tSecret..."
             Foreground="Gray"
             Margin="8,0,0,0"
             Grid.Row="2" />
+        <Grid x:Name="Kurukuru" Visibility="Collapsed" Grid.Row="1" Background="#aaffffff">
+            <ProgressRing Height="48" Width="48" IsActive="True" />
+        </Grid>
     </Grid>
 </Page>
