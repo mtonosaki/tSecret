@@ -9,6 +9,7 @@ using tSecretCommon;
 using tSecretCommon.Models;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
@@ -27,9 +28,6 @@ namespace tSecretUwp
         public NoteListPage()
         {
             this.InitializeComponent();
-
-            ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
-            Refresh();
         }
 
         private bool IsShowAll
@@ -38,8 +36,63 @@ namespace tSecretUwp
             set => ShowDeleted.IsChecked = value;
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            log(null);
+            Refresh();
+            if (e.NavigationMode == NavigationMode.New)
+            {
+                ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
+            }
+            if (e.NavigationMode == NavigationMode.Back)
+            {
+                var prevID = ConfigUtil.Get("PreviousNoteID", "--");
+                var note = lvMain.Items.Select(a => (Note)a).Where(a => a.ID.ToString() == prevID).FirstOrDefault();
+                if( note != default)
+                {
+                    DelayUtil.Start(TimeSpan.FromMilliseconds(100), () =>
+                    {
+                        lvMain.ScrollIntoView(note);
+                        lvMain.SelectedItem = note;
+                    });
+                }
+            }
+            base.OnNavigatedTo(e);
+        }
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            if (e.Parameter is Note note)
+            {
+                ConfigUtil.Set("PreviousNoteID", note.ID.ToString());
+            }
+            else
+            {
+                if (e.SourcePageType != typeof(AuthPage))
+                {
+                    e.Cancel = true;
+                }
+            }
+            base.OnNavigatingFrom(e);
+        }
+
         private void Refresh()
         {
+            // Delete empty instance
+            var dels = new List<Note>();
+            foreach (var note in NotePersister.Current)
+            {
+                if( string.IsNullOrEmpty(note.AccountID?.Trim()) &&
+                    string.IsNullOrEmpty(note.Caption?.Trim()) &&
+                    string.IsNullOrEmpty(note.Password?.Trim()))
+                {
+                    dels.Add(note);
+                }
+            }
+            foreach (var note in dels)
+            {
+                NotePersister.Current.Remove(note);
+            }
+
             var dat = new ObservableCollection<Note>();
             foreach (var note in NotePersister.Current
                                     .Where(rec => IsShowAll || rec.IsDeleted == false)
@@ -52,6 +105,7 @@ namespace tSecretUwp
 
             // Make index buttons
             IndexButtons.Children.Clear();
+
             foreach (var rubi1 in NotePersister.Current
                                     .Select(a => a.CaptionRubi1)
                                     .Where(a => a != "@")
@@ -69,8 +123,16 @@ namespace tSecretUwp
                     Background = new SolidColorBrush(Colors.Transparent),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     ClickMode = ClickMode.Press,
+                    KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Auto,
                 });
                 btn.Click += Index_Click;
+                if (Enum.TryParse<VirtualKey>(rubi1, out var key))
+                {
+                    btn.KeyboardAccelerators.Add(new KeyboardAccelerator
+                    {
+                        Key = key,
+                    });
+                }
             }
         }
 
@@ -170,10 +232,20 @@ namespace tSecretUwp
             {
                 Frame.GoBack();
             }
-            else
+        }
+
+        private void NewButton_Click(object sender, RoutedEventArgs e)
+        {
+            var note = new Note
             {
-                Frame.Navigate(typeof(AuthPage));
-            }
+                ID = Guid.NewGuid(),
+                CreatedDateTime = DateTime.Now,
+            };
+            NotePersister.Current.Add(note);
+            Frame.Navigate(typeof(NoteEntryPage), note, new SlideNavigationTransitionInfo
+            {
+                Effect = SlideNavigationTransitionEffect.FromRight,
+            });
         }
     }
 }

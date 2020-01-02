@@ -11,9 +11,10 @@
     <StackPanel>
         <Image
             Source="./Assets/icon256.png"
+            Margin="0,16,0,16"
             Width="256" Height="256" />
         <TextBlock
-            Text="Managed your secret w/ tSecret"
+            Text="Manage your secret w/ tSecret"
             HorizontalAlignment="Center"
             Foreground="White" />
         <Button

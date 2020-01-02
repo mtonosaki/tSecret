@@ -148,7 +148,7 @@ namespace tSecretCommon.Models
         public IEnumerable<NoteHistRecord> CaptionHistory => UniversalData.GetValueOrDefault("Caption", true, k => new List<NoteHistRecord>()).OrderByDescending(a => a.DT);
 
         [IgnoreDataMember]
-        public string CaptionRubi1 => Japanese.Getあかさたな(this["CaptionRubi"].Trim().Substring(0, 1).ToUpper());
+        public string CaptionRubi1 => Japanese.Getあかさたな((this["CaptionRubi"].Trim() + " ").Substring(0, 1).ToUpper());
 
         [IgnoreDataMember]
         public string CaptionRubi

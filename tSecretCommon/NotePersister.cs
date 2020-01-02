@@ -286,6 +286,23 @@ namespace tSecretCommon
             }
         }
 
+        /// <summary>
+        /// Physical delete the specified instance
+        /// </summary>
+        /// <param name="item"></param>
+        public void Remove(Note item)
+        {
+            if( item != null)
+            {
+                Load();
+                if (dat.Contains(item))
+                {
+                    dat.Remove(item);
+                }
+                Save();
+            }
+        }
+
         public IEnumerator<Note> GetEnumerator()
         {
             Load();
