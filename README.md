@@ -12,7 +12,7 @@ To use this repository, follow step below.
 1. Create a partial class MySecretParameter like below sample.
 
 ```
-namespace tSecret
+namespace tSecretCommon
 {
     public partial class MySecretParameter : SecretParameterBase
     {
