@@ -11,7 +11,7 @@ To use this repository, follow step below.
 1. Make MySecretParameter.cs in Xamarin Common folder(tSecret/tSecret)
 1. Create a partial class MySecretParameter like below sample.
 
-```
+```C#
 namespace tSecret
 {
     public partial class MySecretParameter : SecretParameterBase
