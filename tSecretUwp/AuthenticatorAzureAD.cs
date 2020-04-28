@@ -1,15 +1,17 @@
 ﻿using Microsoft.Identity.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tono;
 using tSecretCommon;
 
 namespace tSecretUwp
 {
-    public class LoginAzureAD : Authenticator
+    public class AuthenticatorAzureAD : Authenticator
     {
         public string ErrorMessage { get; private set; }
 
@@ -28,11 +30,13 @@ namespace tSecretUwp
             var accounts = await clientApp.GetAccountsAsync().ConfigureAwait(false);
             var firstAccount = accounts.FirstOrDefault();
             var scopes = new string[] { "user.read" };
+            IsSilentLogin = false;
 
             try
             {
                 authResult = await clientApp.AcquireTokenSilent(scopes, firstAccount)     // Login automatically
                                                   .ExecuteAsync();
+                IsSilentLogin = true;
             }
             catch (MsalUiRequiredException)
             {
@@ -54,7 +58,27 @@ namespace tSecretUwp
             }
 
             IsAuthenticated = true;
+            _displayName = authResult.UniqueId;
             return IsAuthenticated;
+        }
+
+        public override async Task LogoutAsync()
+        {
+            if (IsAuthenticated)
+            {
+                var accounts = await clientApp.GetAccountsAsync().ConfigureAwait(false);
+                var firstAccount = accounts.FirstOrDefault();
+
+                try
+                {
+                    await clientApp.RemoveAsync(firstAccount).ConfigureAwait(false);
+                    IsAuthenticated = false;
+                }
+                catch (MsalException ex)
+                {
+                    ErrorMessage = $"Error signing-out user: {ex.Message}";
+                }
+            }
         }
 
         public override async Task<string> GetPrivacyData()
@@ -76,6 +100,9 @@ namespace tSecretUwp
         /// </summary>
         public string TenantID => authResult?.TenantId;
         public override string UserObjectID => authResult?.UniqueId;
+        public override string DisplayName => _displayName;
+
+        private string _displayName = "";
 
         /// <summary>
         /// Perform an HTTP GET request to a URL using an HTTP Authorization header
@@ -93,6 +120,10 @@ namespace tSecretUwp
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 response = await httpClient.SendAsync(request).ConfigureAwait(false);
                 var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                var json = JsonConvert.DeserializeObject(content);
+                content = json.ToString();
+
                 return content;
             }
             catch (Exception ex)

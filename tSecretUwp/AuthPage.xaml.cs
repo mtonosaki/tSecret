@@ -25,7 +25,7 @@ namespace tSecretUwp
     public sealed partial class AuthPage : Page
     {
         public string FirstErrorMessage { get; set; } = string.Empty;
-        private LoginAzureAD AzureAD => ((App)Application.Current).AzureAD;
+        private Authenticator AzureAD => ((App)Application.Current).Auth;
         private NotePersister Persister => ((App)Application.Current).Persister;
 
         public AuthPage()
@@ -56,7 +56,7 @@ namespace tSecretUwp
             {
                 ErrorMessage.Visibility = Visibility.Collapsed;
                 FirstErrorMessage = string.Empty;
-                if( StartButtonVisible != null)
+                if (StartButtonVisible != null)
                 {
                     StartButton.IsEnabled = StartButtonVisible ?? false;
                 }
@@ -66,8 +66,11 @@ namespace tSecretUwp
         private async Task<bool> AuthenticateAsync()
         {
             await SetErrorMessage("");
-
-            var azureRes = await AzureAD.LoginAsync();  // Get AzureAD credential
+            if (AzureAD.IsAuthenticated)
+            {
+                AzureAD.IsSilentLogin = true;
+            }
+            var azureRes = AzureAD.IsAuthenticated ? true : await AzureAD.LoginAsync();  // Get AzureAD credential
             if (azureRes)
             {
                 var dmy = Task.Run(async () =>
@@ -75,10 +78,11 @@ namespace tSecretUwp
                     var content = await AzureAD.GetPrivacyData();
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
-                        var displayName = StrUtil.LeftBefore(StrUtil.MidSkip(content ?? "", "^{.*\"displayName\":\"") + "\"", "\"").Trim(); // pick displayName part
-                        if( string.IsNullOrEmpty(displayName) == false)
+                        var s1 = StrUtil.MidSkip(content ?? "", "\"displayName\"\\s*:\\s*\"");
+                        var displayName = StrUtil.LeftBefore(s1 + "\"", "\"").Trim();           // pick displayName part
+                        if (string.IsNullOrEmpty(displayName) == false)
                         {
-                            ApplicationView.GetForCurrentView().Title = displayName;    
+                            ApplicationView.GetForCurrentView().Title = displayName;
                         }
                     });
                 });
@@ -89,19 +93,32 @@ namespace tSecretUwp
                 return false;
             }
 
-            Persister.Load();
+            Persister.Load(isForceReload: true);
 
+            var pinres = AzureAD.IsSilentLogin ? await PinAuthentication() : AzureAD.IsAuthenticated;
+            if (pinres)
+            {
+                ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
+                this.Frame.Navigate(typeof(NoteListPage), null, new SlideNavigationTransitionInfo
+                {
+                    Effect = SlideNavigationTransitionEffect.FromRight,
+                });
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private async Task<bool> PinAuthentication()
+        {
             try
             {
                 var res = await UserConsentVerifier.RequestVerificationAsync("tSecret");
                 switch (res)
                 {
                     case UserConsentVerificationResult.Verified:
-                        ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
-                        this.Frame.Navigate(typeof(NoteListPage), null, new SlideNavigationTransitionInfo
-                        {
-                            Effect = SlideNavigationTransitionEffect.FromRight,
-                        });
                         return true;
                     default:
                         await SetErrorMessage("Authentication error");

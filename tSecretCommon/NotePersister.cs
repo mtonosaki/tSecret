@@ -19,13 +19,13 @@ namespace tSecretCommon
 {
     public class NotePersister : IEnumerable<Note>
     {
-        public Authenticator Authenticator { get; set; }
+        public Authenticator Auth { get; set; }
 
         private const string VERSION = "3.00";
         private static readonly Random rnd = new Random(DateTime.Now.Ticks.GetHashCode());
         private readonly MySecretParameter SecretParam = new MySecretParameter();
-        private string FilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{Authenticator.UserObjectID}.dat");
-        private string BlobName => $"MainData.{Authenticator.UserObjectID}.dat";
+        private string FilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{Auth.UserObjectID}.dat");
+        private string BlobName => $"MainData.{Auth.UserObjectID}.dat";
 
         // Data
         private NoteList dat = null;
@@ -168,7 +168,7 @@ namespace tSecretCommon
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.PKCS7,
                 IV = Encoding.ASCII.GetBytes(iv.ToString()),
-                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, Authenticator.UserObjectID)),
+                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, Auth.UserObjectID)),
             })
             {
                 var enc = ri.CreateEncryptor(ri.Key, ri.IV);
@@ -206,7 +206,7 @@ namespace tSecretCommon
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.PKCS7,
                 IV = Encoding.ASCII.GetBytes(iv),
-                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, Authenticator.UserObjectID)),
+                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, Auth.UserObjectID)),
             })
             {
                 var de = rijndael.CreateDecryptor(rijndael.Key, rijndael.IV);
@@ -226,13 +226,15 @@ namespace tSecretCommon
         /// <summary>
         /// Load for preparing
         /// </summary>
+        /// <param name="isForceReload">true=load from disk forcely. / false=use memory cache</param>
         /// <returns></returns>
-        public void Load()
+        public void Load(bool isForceReload = false)
         {
-            if (dat != null)
+            if (dat != null && isForceReload == false)
             {
                 return;
             }
+            dat = null;
             if (File.Exists(FilePath))
             {
                 try

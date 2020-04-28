@@ -11,6 +11,7 @@ using tSecretCommon.Models;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Popups;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -22,6 +23,9 @@ namespace tSecretUwp
 {
     public sealed partial class NoteListPage : Page
     {
+        private Authenticator Auth => ((App)Application.Current).Auth;
+        private NotePersister Persister => ((App)Application.Current).Persister;
+
         public NoteListPage()
         {
             this.InitializeComponent();
@@ -58,6 +62,8 @@ namespace tSecretUwp
         }
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
+            Logout.IsEnabled = Auth.IsAuthenticated;
+
             if (e.Parameter is Note note)
             {
                 ConfigUtil.Set("PreviousNoteID", note.ID.ToString());
@@ -245,6 +251,33 @@ namespace tSecretUwp
             {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
+        }
+
+        private async void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            if (Auth.IsAuthenticated)
+            {
+                Logout.IsEnabled = false;
+                Persister.Save();
+                await Auth.LogoutAsync();
+                if (Auth.IsAuthenticated == false)
+                {
+                    ApplicationView.GetForCurrentView().Title = "";
+
+                    if (Frame.CanGoBack)
+                    {
+                        Frame.GoBack();
+                    }
+                    else
+                    {
+                        Frame.Navigate(typeof(AuthPage));
+                    }
+                }
+                else
+                {
+                    Logout.IsEnabled = Auth.IsAuthenticated;
+                }
+            }
         }
     }
 }

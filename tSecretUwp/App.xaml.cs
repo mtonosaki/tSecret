@@ -13,17 +13,17 @@ namespace tSecretUwp
 {
     public sealed partial class App : Application
     {
-        public LoginAzureAD AzureAD { get; }
+        public Authenticator Auth { get; }
         public NotePersister Persister { get; }
 
         public App()
         {
             InitializeComponent();
             Suspending += OnSuspending;
-            AzureAD = new LoginAzureAD();
+            Auth = new AuthenticatorAzureAD();
             Persister = new NotePersister
             {
-                Authenticator = AzureAD,
+                Auth = Auth,
             };
         }
 
@@ -56,7 +56,7 @@ namespace tSecretUwp
 
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
-            if (AzureAD.IsAuthenticated)
+            if (Auth.IsAuthenticated)
             {
                 Persister.Save();
             }
