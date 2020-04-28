@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿// (c) 2019 Manabu Tonosaki
+// Licensed under the MIT license.
+
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Tono;
 using tSecretCommon.Models;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
@@ -71,7 +65,7 @@ namespace tSecretUwp
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Text = rec.Value,
-                BorderThickness = new Thickness(0,0,0,0),
+                BorderThickness = new Thickness(0, 0, 0, 0),
                 IsReadOnly = true,
                 IsTextPredictionEnabled = false,
             });

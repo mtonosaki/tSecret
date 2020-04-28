@@ -1,21 +1,18 @@
-﻿using System;
+﻿// (c) 2019 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Tono.Gui.Uwp;
 using tSecretCommon;
 using tSecretCommon.Models;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
@@ -48,7 +45,7 @@ namespace tSecretUwp
             {
                 var prevID = ConfigUtil.Get("PreviousNoteID", "--");
                 var note = lvMain.Items.Select(a => (Note)a).Where(a => a.ID.ToString() == prevID).FirstOrDefault();
-                if( note != default)
+                if (note != default)
                 {
                     DelayUtil.Start(TimeSpan.FromMilliseconds(100), () =>
                     {
@@ -75,13 +72,15 @@ namespace tSecretUwp
             base.OnNavigatingFrom(e);
         }
 
+        private App App => ((App)Application.Current);
+
         private void Refresh()
         {
             // Delete empty instance
             var dels = new List<Note>();
-            foreach (var note in NotePersister.Current)
+            foreach (var note in App.Persister)
             {
-                if( string.IsNullOrEmpty(note.AccountID?.Trim()) &&
+                if (string.IsNullOrEmpty(note.AccountID?.Trim()) &&
                     string.IsNullOrEmpty(note.Caption?.Trim()) &&
                     string.IsNullOrEmpty(note.Password?.Trim()))
                 {
@@ -90,11 +89,11 @@ namespace tSecretUwp
             }
             foreach (var note in dels)
             {
-                NotePersister.Current.Remove(note);
+                App.Persister.Remove(note);
             }
 
             var dat = new ObservableCollection<Note>();
-            foreach (var note in NotePersister.Current
+            foreach (var note in App.Persister
                                     .Where(rec => IsShowAll || rec.IsDeleted == false)
                                     .OrderBy(rec => $"{rec.CaptionRubi1}--{rec.CaptionRubi}")
             )
@@ -106,7 +105,7 @@ namespace tSecretUwp
             // Make index buttons
             IndexButtons.Children.Clear();
 
-            foreach (var rubi1 in NotePersister.Current
+            foreach (var rubi1 in App.Persister
                                     .Select(a => a.CaptionRubi1)
                                     .Where(a => a != "@")
                                     .Distinct()
@@ -164,11 +163,11 @@ namespace tSecretUwp
                 KurukuruIn();
                 await syncProc();
                 KurukuruOut();
-                await new MessageDialog($"クラウドと同期しました。", "tSecret").ShowAsync();
+                await new MessageDialog($"Sync to Cloud", "tSecret").ShowAsync();
             }
             catch (Exception ex)
             {
-                await new MessageDialog($"クラウド同期に失敗しました。\r\n{ex.Message}", "tSecret").ShowAsync();
+                await new MessageDialog($"Cloud sync error\r\n{ex.Message}", "tSecret").ShowAsync();
                 log(null);
                 KurukuruOut();
             }
@@ -181,7 +180,7 @@ namespace tSecretUwp
         private async System.Threading.Tasks.Task syncProc()
         {
             log("Cloud sync...");
-            await NotePersister.Current.Sync();
+            await App.Persister.Sync();
             Refresh();
             log(null);
         }
@@ -241,7 +240,7 @@ namespace tSecretUwp
                 ID = Guid.NewGuid(),
                 CreatedDateTime = DateTime.Now,
             };
-            NotePersister.Current.Add(note);
+            App.Persister.Add(note);
             Frame.Navigate(typeof(NoteEntryPage), note, new SlideNavigationTransitionInfo
             {
                 Effect = SlideNavigationTransitionEffect.FromRight,

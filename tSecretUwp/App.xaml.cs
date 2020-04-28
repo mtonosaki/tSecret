@@ -1,4 +1,7 @@
-﻿using System;
+﻿// (c) 2019 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using System;
 using tSecretCommon;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -10,10 +13,18 @@ namespace tSecretUwp
 {
     public sealed partial class App : Application
     {
+        public LoginAzureAD AzureAD { get; }
+        public NotePersister Persister { get; }
+
         public App()
         {
             InitializeComponent();
             Suspending += OnSuspending;
+            AzureAD = new LoginAzureAD();
+            Persister = new NotePersister
+            {
+                Authenticator = AzureAD,
+            };
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs e)
@@ -25,13 +36,11 @@ namespace tSecretUwp
                 rootFrame = new Frame();
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
-
-                NotePersister.Current.Load();
                 Window.Current.Content = rootFrame;
             }
 
             if (e.PrelaunchActivated == false)
-            { 
+            {
                 if (rootFrame.Content == null)
                 {
                     rootFrame.Navigate(typeof(AuthPage), e.Arguments);
@@ -47,7 +56,10 @@ namespace tSecretUwp
 
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
-            NotePersister.Current.Save();
+            if (AzureAD.IsAuthenticated)
+            {
+                Persister.Save();
+            }
             var deferral = e.SuspendingOperation.GetDeferral();
             deferral.Complete();
         }

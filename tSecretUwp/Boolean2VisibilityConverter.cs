@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// (c) 2019 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using System;
 using Tono;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
@@ -21,7 +20,8 @@ namespace tSecretUwp
             if (value is Visibility vis)
             {
                 return vis == Visibility.Visible;
-            } else
+            }
+            else
             {
                 return Visibility.Visible;
             }

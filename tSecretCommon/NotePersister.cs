@@ -1,4 +1,7 @@
-﻿using Microsoft.WindowsAzure.Storage;
+﻿// (c) 2019 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
 using System;
@@ -16,15 +19,13 @@ namespace tSecretCommon
 {
     public class NotePersister : IEnumerable<Note>
     {
-        /// <summary>
-        /// Unique instance
-        /// </summary>
-        private const string VERSION = "2.20";
-        public static readonly NotePersister Current = new NotePersister();
-        private static readonly string FILE = $"tSecret.localcache.{VERSION}.dat";
-        private static readonly string FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), FILE);
+        public Authenticator Authenticator { get; set; }
+
+        private const string VERSION = "3.00";
         private static readonly Random rnd = new Random(DateTime.Now.Ticks.GetHashCode());
         private readonly MySecretParameter SecretParam = new MySecretParameter();
+        private string FilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{Authenticator.UserObjectID}.dat");
+        private string BlobName => $"MainData.{Authenticator.UserObjectID}.dat";
 
         // Data
         private NoteList dat = null;
@@ -45,15 +46,15 @@ namespace tSecretCommon
             {
                 return;
             }
-            Debug.Write($"MainData.dat is uploading...");
+            Debug.Write($"{BlobName} is uploading...");
             string json = JsonConvert.SerializeObject(dat);
             string sec = RijndaelEncode(json);
 
-            CloudBlobContainer container = GetContainer("tsecret");
+            var container = GetContainer("tsecret");
             await container.CreateIfNotExistsAsync();
-            CloudBlockBlob blob = container.GetBlockBlobReference("MainData.dat");
+            var blob = container.GetBlockBlobReference(BlobName);
             await blob.UploadFromStreamAsync(new MemoryStream(Encoding.UTF8.GetBytes(sec)));
-            Debug.Write($"{DateTime.Now.ToString(TimeUtil.FormatYMDHMS)} MainData.dat have been uploaded succesfully.");
+            Debug.Write($"{DateTime.Now.ToString(TimeUtil.FormatYMDHMS)} {BlobName} have been uploaded succesfully.");
         }
 
         /// <summary>
@@ -120,16 +121,31 @@ namespace tSecretCommon
         /// <returns></returns>
         public async Task<NoteList> Download()
         {
-            Debug.Write($"MainData.dat is downloading...");
+            Debug.Write($"{BlobName} is downloading...");
             CloudBlobContainer container = GetContainer("tsecret");
             await container.CreateIfNotExistsAsync();
-            CloudBlockBlob blob = container.GetBlockBlobReference("MainData.dat");
+            CloudBlockBlob blob = container.GetBlockBlobReference(BlobName);
             string sec = await blob.DownloadTextAsync();
             string json = RijndaelDecode(sec);
             NoteList ret = JsonConvert.DeserializeObject<NoteList>(json);
             Debug.Write($"{DateTime.Now.ToString(TimeUtil.FormatYMDHMS)} MainData.dat have been downloaded succesfully.");
 
             return ret;
+        }
+
+        private string FusionString(string basestr, string filter)
+        {
+            var nums = new[] { 157, 233, 227, 179, 41, 257, 31, 89, 59, 83, 109, 3, 107, 5, 241, 269, 281, 139, 211, 23, 127, 131, 223, 97, 199, 163, 277, 29, 73, 11, 193, 151, 79, 19, 7, 229, 167, 47, 197, 149, 103, 37, 239, 13, 113, 2, 53, 61, 137, 263, };
+            var ret = new StringBuilder(basestr);
+            var nB = basestr.Length;
+            var nF = filter.Length;
+            var offset = 0;
+            for (var i = Math.Max(nB, nF) - 1; i >= 0; i--)
+            {
+                ret[i % nB] = SecretParam.TEXTSET64[(SecretParam.TEXTSET64.IndexOf(ret[i % nB]) + (int)filter[i % nF] + nums[(i + offset) % nums.Length]) % SecretParam.TEXTSET64.Length];
+                offset++;
+            }
+            return ret.ToString();
         }
 
         /// <summary>
@@ -152,7 +168,7 @@ namespace tSecretCommon
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.PKCS7,
                 IV = Encoding.ASCII.GetBytes(iv.ToString()),
-                Key = Encoding.ASCII.GetBytes(SecretParam.KEY),
+                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, Authenticator.UserObjectID)),
             })
             {
                 var enc = ri.CreateEncryptor(ri.Key, ri.IV);
@@ -190,7 +206,7 @@ namespace tSecretCommon
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.PKCS7,
                 IV = Encoding.ASCII.GetBytes(iv),
-                Key = Encoding.ASCII.GetBytes(SecretParam.KEY),
+                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, Authenticator.UserObjectID)),
             })
             {
                 var de = rijndael.CreateDecryptor(rijndael.Key, rijndael.IV);
@@ -217,11 +233,11 @@ namespace tSecretCommon
             {
                 return;
             }
-            if (File.Exists(FileName))
+            if (File.Exists(FilePath))
             {
                 try
                 {
-                    using (var fs = new FileStream(FileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (var fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         using (var sr = new StreamReader(fs, Encoding.UTF8))
                         {
@@ -260,7 +276,7 @@ namespace tSecretCommon
             }
             var json = JsonConvert.SerializeObject(dat);
             var sec = RijndaelEncode(json);
-            using (var sw = new StreamWriter(FileName, false, Encoding.UTF8))
+            using (var sw = new StreamWriter(FilePath, false, Encoding.UTF8))
             {
                 sw.Write(sec);
                 sw.Close();
@@ -292,7 +308,7 @@ namespace tSecretCommon
         /// <param name="item"></param>
         public void Remove(Note item)
         {
-            if( item != null)
+            if (item != null)
             {
                 Load();
                 if (dat.Contains(item))
