@@ -26,10 +26,23 @@
             Margin="0, 16, 0, 16"
             HorizontalAlignment="Center"
             Click="StartButton_Click" />
+        <Button
+            Name="OfflineButton"
+            Content="OFFLINE mode"
+            Foreground="White"
+            FontWeight="Bold"
+            FontSize="22"
+            Margin="0, 16, 0, 16"
+            HorizontalAlignment="Center"
+            Click="OfflineButton_Click" />
         <TextBlock
             Name="ErrorMessage"
-            Visibility="Collapsed"
+            Foreground="Orange"
+            FontWeight="Bold"
+            Visibility="Visible"
             HorizontalAlignment="Center"
+            TextAlignment="Center"
+            Width="9999"
             Text="Authentication error" />
     </StackPanel>
 </Page>

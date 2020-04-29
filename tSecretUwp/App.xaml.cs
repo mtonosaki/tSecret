@@ -15,11 +15,14 @@ namespace tSecretUwp
     {
         public Authenticator Auth { get; }
         public NotePersister Persister { get; }
+        public SettingPersister Setting { get; set; }
 
         public App()
         {
             InitializeComponent();
             Suspending += OnSuspending;
+
+            Setting = new SettingPersister();
             Auth = new AuthenticatorAzureAD();
             Persister = new NotePersister
             {
@@ -29,6 +32,8 @@ namespace tSecretUwp
 
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
+            Setting.LoadFile();
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             if (rootFrame == null)
@@ -58,7 +63,7 @@ namespace tSecretUwp
         {
             if (Auth.IsAuthenticated)
             {
-                Persister.Save();
+                Persister.SaveFile();
             }
             var deferral = e.SuspendingOperation.GetDeferral();
             deferral.Complete();

@@ -24,7 +24,8 @@ namespace tSecretCommon
         private const string VERSION = "3.00";
         private static readonly Random rnd = new Random(DateTime.Now.Ticks.GetHashCode());
         private readonly MySecretParameter SecretParam = new MySecretParameter();
-        private string FilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{Auth.UserObjectID}.dat");
+        private string DataFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{Auth.UserObjectID}.dat");
+        private string SettingFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{Auth.UserObjectID}.dat");
         private string BlobName => $"MainData.{Auth.UserObjectID}.dat";
 
         // Data
@@ -109,7 +110,7 @@ namespace tSecretCommon
                 }
             }
 
-            Save();
+            SaveFile();
             await Upload();
 
             return dat;
@@ -228,18 +229,18 @@ namespace tSecretCommon
         /// </summary>
         /// <param name="isForceReload">true=load from disk forcely. / false=use memory cache</param>
         /// <returns></returns>
-        public void Load(bool isForceReload = false)
+        public void LoadFile(bool isForceReload = false)
         {
             if (dat != null && isForceReload == false)
             {
                 return;
             }
             dat = null;
-            if (File.Exists(FilePath))
+            if (File.Exists(DataFilePath))
             {
                 try
                 {
-                    using (var fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (var fs = new FileStream(DataFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         using (var sr = new StreamReader(fs, Encoding.UTF8))
                         {
@@ -266,11 +267,7 @@ namespace tSecretCommon
             }
         }
 
-        /// <summary>
-        /// Save the all note data
-        /// </summary>
-        /// <returns></returns>
-        public void Save()
+        public void SaveFile()
         {
             if (dat == null)
             {
@@ -278,7 +275,7 @@ namespace tSecretCommon
             }
             var json = JsonConvert.SerializeObject(dat);
             var sec = RijndaelEncode(json);
-            using (var sw = new StreamWriter(FilePath, false, Encoding.UTF8))
+            using (var sw = new StreamWriter(DataFilePath, false, Encoding.UTF8))
             {
                 sw.Write(sec);
                 sw.Close();
@@ -294,13 +291,13 @@ namespace tSecretCommon
         {
             if (item != null)
             {
-                Load();
+                LoadFile();
                 if (dat.Contains(item))
                 {
                     dat.Remove(item);
                 }
                 dat.Add(item);
-                Save();
+                SaveFile();
             }
         }
 
@@ -312,24 +309,24 @@ namespace tSecretCommon
         {
             if (item != null)
             {
-                Load();
+                LoadFile();
                 if (dat.Contains(item))
                 {
                     dat.Remove(item);
                 }
-                Save();
+                SaveFile();
             }
         }
 
         public IEnumerator<Note> GetEnumerator()
         {
-            Load();
+            LoadFile();
             return dat.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            Load();
+            LoadFile();
             return dat.GetEnumerator();
         }
     }

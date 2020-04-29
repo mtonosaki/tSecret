@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using Tono.Gui.Uwp;
 using tSecretCommon;
 using tSecretCommon.Models;
@@ -258,8 +259,10 @@ namespace tSecretUwp
             if (Auth.IsAuthenticated)
             {
                 Logout.IsEnabled = false;
-                Persister.Save();
-                await Auth.LogoutAsync();
+                Persister.SaveFile();
+                
+                await Auth.LogoutAsync(() => (new CancellationTokenSource(5000)).Token, () => null);
+
                 if (Auth.IsAuthenticated == false)
                 {
                     ApplicationView.GetForCurrentView().Title = "";
