@@ -19,14 +19,13 @@ namespace tSecretCommon
 {
     public class NotePersister : IEnumerable<Note>
     {
-        public Authenticator Auth { get; set; }
-
         private const string VERSION = "3.00";
         private static readonly Random rnd = new Random(DateTime.Now.Ticks.GetHashCode());
         private readonly MySecretParameter SecretParam = new MySecretParameter();
-        private string DataFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{Auth.UserObjectID}.dat");
-        private string SettingFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{Auth.UserObjectID}.dat");
-        private string BlobName => $"MainData.{Auth.UserObjectID}.dat";
+        private string DataFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{UserObjectID}.dat");
+        private string SettingFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{UserObjectID}.dat");
+        private string BlobName => $"MainData.{UserObjectID}.dat";
+        private string UserObjectID = "";
 
         // Data
         private NoteList dat = null;
@@ -169,7 +168,7 @@ namespace tSecretCommon
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.PKCS7,
                 IV = Encoding.ASCII.GetBytes(iv.ToString()),
-                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, Auth.UserObjectID)),
+                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, UserObjectID)),
             })
             {
                 var enc = ri.CreateEncryptor(ri.Key, ri.IV);
@@ -207,7 +206,7 @@ namespace tSecretCommon
                 Mode = CipherMode.CBC,
                 Padding = PaddingMode.PKCS7,
                 IV = Encoding.ASCII.GetBytes(iv),
-                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, Auth.UserObjectID)),
+                Key = Encoding.ASCII.GetBytes(FusionString(SecretParam.KEY, UserObjectID)),
             })
             {
                 var de = rijndael.CreateDecryptor(rijndael.Key, rijndael.IV);
@@ -229,8 +228,14 @@ namespace tSecretCommon
         /// </summary>
         /// <param name="isForceReload">true=load from disk forcely. / false=use memory cache</param>
         /// <returns></returns>
-        public void LoadFile(bool isForceReload = false)
+        public void LoadFile(string userObjectID, bool isForceReload = false)
         {
+            if (userObjectID.Equals(UserObjectID) == false)
+            {
+                isForceReload = true;
+            }
+            UserObjectID = userObjectID;
+
             if (dat != null && isForceReload == false)
             {
                 return;
@@ -291,7 +296,7 @@ namespace tSecretCommon
         {
             if (item != null)
             {
-                LoadFile();
+                LoadFile(UserObjectID);
                 if (dat.Contains(item))
                 {
                     dat.Remove(item);
@@ -309,7 +314,7 @@ namespace tSecretCommon
         {
             if (item != null)
             {
-                LoadFile();
+                LoadFile(UserObjectID);
                 if (dat.Contains(item))
                 {
                     dat.Remove(item);
@@ -320,13 +325,13 @@ namespace tSecretCommon
 
         public IEnumerator<Note> GetEnumerator()
         {
-            LoadFile();
+            LoadFile(UserObjectID);
             return dat.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            LoadFile();
+            LoadFile(UserObjectID);
             return dat.GetEnumerator();
         }
     }

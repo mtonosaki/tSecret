@@ -260,8 +260,8 @@ namespace tSecretUwp
             {
                 Logout.IsEnabled = false;
                 Persister.SaveFile();
-                
-                await Auth.LogoutAsync(() => (new CancellationTokenSource(5000)).Token, () => null);
+
+                await Auth.LogoutAsync(() => new StoryNode { CTS = new CancellationTokenSource(5000), });
 
                 if (Auth.IsAuthenticated == false)
                 {
@@ -280,6 +280,10 @@ namespace tSecretUwp
                 {
                     Logout.IsEnabled = Auth.IsAuthenticated;
                 }
+            }
+            else
+            {
+                await new MessageDialog($"Your have not logged in yet (LOCAL Mode)", "tSecret").ShowAsync();
             }
         }
     }

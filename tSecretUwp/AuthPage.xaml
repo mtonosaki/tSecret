@@ -27,14 +27,14 @@
             HorizontalAlignment="Center"
             Click="StartButton_Click" />
         <Button
-            Name="OfflineButton"
-            Content="OFFLINE mode"
+            Name="LocalModeButton"
+            Content="LOCAL Mode"
             Foreground="White"
             FontWeight="Bold"
             FontSize="22"
             Margin="0, 16, 0, 16"
             HorizontalAlignment="Center"
-            Click="OfflineButton_Click" />
+            Click="LocalModeButton_Click" />
         <TextBlock
             Name="ErrorMessage"
             Foreground="Orange"

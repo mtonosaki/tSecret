@@ -24,10 +24,7 @@ namespace tSecretUwp
 
             Setting = new SettingPersister();
             Auth = new AuthenticatorAzureAD();
-            Persister = new NotePersister
-            {
-                Auth = Auth,
-            };
+            Persister = new NotePersister();
         }
 
         protected override void OnLaunched(LaunchActivatedEventArgs e)

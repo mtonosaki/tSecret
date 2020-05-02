@@ -16,6 +16,7 @@ using Tono.Gui.Uwp;
 using tSecretCommon;
 using Windows.Security.Credentials.UI;
 using Windows.Services.Maps;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -30,94 +31,220 @@ namespace tSecretUwp
         private NotePersister Persister => ((App)Application.Current).Persister;
         private AuthenticatorAzureAD AzureAD => (AuthenticatorAzureAD)((App)Application.Current).Auth;
         private SettingPersister Setting => ((App)Application.Current).Setting;
-
-        private CancellationTokenSource CTS = new CancellationTokenSource();
-        private StreamWriter Message = new StreamWriter(new MemoryStream(), Encoding.UTF8);
-
-        public class StoryNode
-        {
-            public Func<Task<bool>> Task { get; set; }
-            public StoryNode Success { get; set; }
-            public StoryNode Error { get; set; }
-        }
-
-        private StoryNode StoryRoot;
+        private StoryNode StoryOnlineRoot;
+        private StoryNode StoryLocalRoot;
 
         public AuthPage()
         {
             this.InitializeComponent();
 
+            Setting.LoadFile();
+
             // Story Build
+            var showError = new StoryNode
+            {
+                Task = scene => AuthenticationErrorAsync(scene),
+                TaskName = "Show Authentication Error",
+                Success = new StoryNode
+                {
+                    Task = scene => ResetControl(scene),
+                    TaskName = "Reset Control",
+                },
+            };
             var moveToNext = new StoryNode
             {
-                Task = () => NextPageAsync(),
+                Task = scene => NextPageAsync(scene),
+                TaskName = "Next Page",
+            };
+            var loadData = new StoryNode
+            {
+                Task = scene => LoadData(scene, Setting.LastUserObjectID),
+                TaskName = $"Load Data : {Setting.LastUserObjectID}",
+                Success = moveToNext,
+                Error = showError,
             };
             var loadPrivacy = new StoryNode
             {
-                Task = () => LoadPrivacy(),
-                Success = moveToNext,
-                Error = moveToNext,
-            };
-            var showError = new StoryNode
-            {
-                Task = () => AuthenticationErrorAsync(),
+                Task = scene => LoadPrivacyAsync(scene),
+                TaskName = "Load Privacy",
+                Success = loadData,
+                Error = loadData,
             };
             var pinCheck = new StoryNode
             {
-                Task = () => PinAuthenticationAsync(),
+                Task = scene => PinAuthenticationAsync(scene),
+                TaskName = "Pin Authentication",
                 Success = loadPrivacy,
                 Error = showError,
             };
             var authInteractive = new StoryNode
             {
-                Task = () => AzureAD.LoginInteractiveAsync(() => CTS.Token, () => Message), // ID/PW authentication
+                Task = scene => AzureAD.LoginInteractiveAsync(() => scene), // ID/PW authentication
+                TaskName = "Login Interactive",
                 Success = loadPrivacy,
                 Error = showError,
             };
 
-            StoryRoot = new StoryNode
+            StoryOnlineRoot = new StoryNode
             {
-                Task = () => AzureAD.LoginSilentAsync(() => CTS.Token, () => Message),  // silent authentication
-                Success = pinCheck,
+                Message = new StreamWriter(new MemoryStream()), // for Root Node
+                CTS = new CancellationTokenSource(),            // for Root Node
+                Task = scene => AzureAD.LoginSilentAsync(() => scene),  // silent authentication
+                TaskName = "Login Silent",
+                Success = new StoryNode
+                {
+                    Task = scene => SaveSetting(scene, userObjectID: AzureAD.UserObjectID),
+                    TaskName = "Save Setting",
+                    Success = pinCheck,
+                    Error = showError,
+                },
                 Error = authInteractive,
+            };
+
+            StoryLocalRoot = new StoryNode
+            {
+                Message = new StreamWriter(new MemoryStream()), // for Root Node
+                CTS = new CancellationTokenSource(),            // for Root Node
+                Task = scene => SetLocalModeAsync(scene),
+                TaskName = "Set Offline Mode",
+                Success = new StoryNode
+                {
+                    Task = scene => PinAuthenticationAsync(scene),
+                    TaskName = "Pin Authentication",
+                    Success = loadData,
+                    Error = showError,
+                },
             };
         }
 
-        private string GetMessage()
+        private string GetMessage(StoryNode scene)
         {
-            var ms = (MemoryStream)Message.BaseStream;
-            ms.Seek(0, SeekOrigin.Begin);
-            var sr = new StreamReader(ms, Encoding.UTF8);
+            scene.Message.Flush();
+            scene.Message.BaseStream.Seek(0, SeekOrigin.Begin);
+            var sr = new StreamReader(scene.Message.BaseStream, Encoding.UTF8);
             var ret = sr.ReadToEnd();
-            Message = new StreamWriter(new MemoryStream(), Encoding.UTF8);
+            scene.Message.BaseStream.SetLength(0);
             return ret;
         }
 
-        private async Task<bool> LoadPrivacy()
+        private async Task<bool> SaveSetting(StoryNode scene, string userObjectID = null, string displayName = null)
         {
-            var ret = await AzureAD.GetPrivacyDataAsync(() => CTS.Token, () => Message);
+            try
+            {
+                if (string.IsNullOrEmpty(userObjectID) == false)
+                {
+                    Setting.LastUserObjectID = userObjectID;
+                }
+                if (string.IsNullOrEmpty(displayName) == false)
+                {
+                    Setting.LastDisplayName = displayName;
+                }
+                Setting.LastLoginTimeUtc = DateTime.UtcNow;
+                Setting.SaveFile();
+                return true;
+            }
+            catch(Exception ex)
+            {
+                await Task.Delay(0);
+                scene.Message.WriteLine($"Save setting exception : {ex.Message}");
+                scene.Message.WriteLine("(E904)");
+                return false;
+            }
+        }
+
+        private async Task<bool> LoadData(StoryNode scene, string userObjectID)
+        {
+            if (string.IsNullOrEmpty(userObjectID))
+            {
+                scene.Message.WriteLine($"User Object ID is not set yet.");
+                scene.Message.WriteLine($"(E905)");
+                return false;
+            }
+            try
+            {
+                await Task.Delay(0);
+                Persister.LoadFile(userObjectID, isForceReload: true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                scene.Message.WriteLine($"Load Data Exception {ex.Message}");
+                scene.Message.WriteLine($"(E903)");
+                return false;
+            }
+        }
+
+        private async Task<bool> SetLocalModeAsync(StoryNode scene)
+        {
+            await Task.Delay(0);
+            Setting.LoadFile();
+
+            if (string.IsNullOrEmpty(Setting.LastDisplayName) == false)
+            {
+                ApplicationView.GetForCurrentView().Title = $"[LOCAL] {(Setting.LastDisplayName ?? "")}";
+            }
+            else
+            {
+                ApplicationView.GetForCurrentView().Title = $"[LOCAL]";
+            }
+            return true;
+        }
+
+        private async Task<bool> LoadPrivacyAsync(StoryNode scene)
+        {
+            var ret = await AzureAD.GetPrivacyDataAsync(() => scene);
             if (ret)
             {
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                Setting.LastDisplayName = AzureAD.DisplayName;
+                Setting.SaveFile();
+                _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
                     ApplicationView.GetForCurrentView().Title = AzureAD.DisplayName ?? "";
+                });
+            }
+            else
+            {
+                var title = "";
+                if (string.IsNullOrEmpty(Setting.LastDisplayName) == false)
+                {
+                    title = $"[OFFLINE?] {(Setting.LastDisplayName ?? "")}";
+                }
+                else
+                {
+                    title = $"[OFFLINE?]";
+                }
+                _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    ApplicationView.GetForCurrentView().Title = title;
                 });
             }
             return ret;
         }
 
-        private async Task<bool> AuthenticationErrorAsync()
+        private async Task<bool> ResetControl(StoryNode scene)
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                ErrorMessage.Text = GetMessage();
-                ErrorMessage.Visibility = string.IsNullOrEmpty(ErrorMessage.Text.Trim()) ? Visibility.Collapsed : Visibility.Visible;
+                LocalModeButton.IsEnabled = true;
+                LocalModeButton.Visibility = Visibility.Visible;
+                StartButton.IsEnabled = true;
+                StartButton.Visibility = Visibility.Visible;
             });
-            await Task.Delay(300, CTS.Token);
             return true;
         }
 
-        private async Task<bool> NextPageAsync()
+        private async Task<bool> AuthenticationErrorAsync(StoryNode scene)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                ErrorMessage.Text = GetMessage(scene);
+                ErrorMessage.Visibility = string.IsNullOrEmpty(ErrorMessage.Text.Trim()) ? Visibility.Collapsed : Visibility.Visible;
+            });
+            await Task.Delay(300, scene.CTS.Token);
+            return true;
+        }
+
+        private async Task<bool> NextPageAsync(StoryNode scene)
         {
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
@@ -130,37 +257,62 @@ namespace tSecretUwp
             return true;
         }
 
-        private async Task<bool> PinAuthenticationAsync()
+        private async Task<bool> PinAuthenticationAsync(StoryNode scene)
         {
             try
             {
-                var res = await UserConsentVerifier.RequestVerificationAsync("tSecret");
-                switch (res)
+                var available = await UserConsentVerifier.CheckAvailabilityAsync();
+                if (available == UserConsentVerifierAvailability.Available)
                 {
-                    case UserConsentVerificationResult.Verified:
-                        return true;
-                    default:
-                        return false;
+                    var res = await UserConsentVerifier.RequestVerificationAsync("tSecret");
+                    switch (res)
+                    {
+                        case UserConsentVerificationResult.Verified:
+                            return true;
+                        default:
+                            scene.Message.WriteLine($"PIN Authentication stopped : {res.ToString()}");
+                            return false;
+                    }
+                }
+                else
+                {
+                    scene.Message.WriteLine($"PIN Authentication is not available.");
+                    scene.Message.WriteLine($"(E902)");
+                    return false;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                scene.Message.WriteLine($"PIN Authentication exception");
+                scene.Message.WriteLine($"(E901)");
+                scene.Message.WriteLine(ex.Message);
                 return false;
             }
         }
 
-        private async Task SetSceneAsync(StoryNode node, CancellationTokenSource mycts)
+        private CancellationTokenSource _currentCTS = null;
+
+        private async Task StartStoryAsync(StoryNode rootNode)
         {
-            for (var scene = node; scene != null && mycts.Token.IsCancellationRequested == false;)
+            var cts = _currentCTS = new CancellationTokenSource();
+            var mes = rootNode.Message;
+            for (var scene = rootNode; scene != null && cts.IsCancellationRequested == false;)
             {
-                var task = scene.Task();    // Run Task
-                var ret = await task.ConfigureAwait(false); // Wait Task finish
+                scene.CTS = cts;                    // inherit CTS
+                scene.Message = mes;                // inherit Message
+                var ret = await scene.Task(scene);  // Run Task
                 scene = ret ? scene.Success : scene.Error;
             }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            // Reset control state
+            StartButton.IsEnabled = true;
+            LocalModeButton.IsEnabled = true;
+            ErrorMessage.Text = "";
+            ErrorMessage.Visibility = Visibility.Collapsed;
+
             if (e.NavigationMode == NavigationMode.New)
             {
                 DelayUtil.Start(TimeSpan.FromMilliseconds(23), () =>
@@ -171,16 +323,25 @@ namespace tSecretUwp
             base.OnNavigatedTo(e);
         }
 
-        private async void StartButton_Click(object sender, RoutedEventArgs e) // giveup thread pool control
+        private void StartButton_Click(object sender, RoutedEventArgs e) // giveup thread pool control
         {
             StartButton.IsEnabled = false;
-            await SetSceneAsync(StoryRoot, CTS);
+            LocalModeButton.IsEnabled = true;
+
+            _ = StartStoryAsync(StoryOnlineRoot);
         }
 
-        private async void OfflineButton_Click(object sender, RoutedEventArgs e) // giveup thread pool control
+        private void LocalModeButton_Click(object sender, RoutedEventArgs e) // giveup thread pool control
         {
-            CTS.Cancel();
-            CTS = new CancellationTokenSource();
+            if (_currentCTS != null)
+            {
+                _currentCTS.Cancel();
+            }
+
+            StartButton.IsEnabled = false;
+            LocalModeButton.IsEnabled = false;
+
+            _ = StartStoryAsync(StoryLocalRoot);
         }
     }
 }
