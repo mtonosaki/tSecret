@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
+using Tono;
 using Tono.Gui.Uwp;
 using tSecretCommon;
 using tSecretCommon.Models;
@@ -291,6 +292,28 @@ namespace tSecretUwp
         {
             ClipboardUtil.Current.Set("");
             log("The clipboard text has been erased.");
+        }
+
+        private void ContextMenu_Copy_Click(object sender, RoutedEventArgs e)
+        {
+            var mi = (MenuFlyoutItem)sender;
+            var val = mi.Tag?.ToString();
+            if (string.IsNullOrEmpty(val) == false)
+            {
+                ClipboardUtil.Current.Set(val);
+                if (mi.Text.Contains("Pass", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    log($"{mi.Text} : {StrUtil.Repeat("●", val.Length)}");
+                }
+                else
+                {
+                    log($"{mi.Text} : {val}");
+                }
+            }
+            else
+            {
+                log($"Warning : Cancelled to {mi.Text} (no value)");
+            }
         }
     }
 }

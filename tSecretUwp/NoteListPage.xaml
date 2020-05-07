@@ -53,25 +53,41 @@
             DoubleTapped="lvMain_DoubleTapped">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="mo:Note">
-                    <Grid>
+                    <Grid 
+                        Width="999">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
                         <TextBlock
-                            Grid.Row="0"
+                            Grid.Row="0" Grid.Column="1"
                             Text="{Binding Caption}"
                             HorizontalAlignment="Left"
                             FontSize="15" />
                         <TextBlock
-                            Grid.Row="1"
+                            Grid.Row="1" Grid.Column="1"
                             Text="{Binding AccountID}"
                             Foreground="#ff88ff"
                             Margin="8,0,0,8"
                             FontSize="13" />
                         <Rectangle
                             Visibility="{x:Bind IsDeleted, Converter={StaticResource B2V}, Mode=OneWay}"
-                            Grid.Row="0" Height="2" Fill="#88ff0000">
+                            Grid.Row="0" Grid.Column="1" Height="2" Fill="#88ff0000">
+                        </Rectangle>
+                        <Rectangle
+                            Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2"
+                            Fill="Transparent">
+                            <Rectangle.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Tag="{Binding AccountID}" Text="Copy Account ID" Click="ContextMenu_Copy_Click" />
+                                    <MenuFlyoutItem Tag="{Binding Password}" Text="Copy Password" Click="ContextMenu_Copy_Click" />
+                                    <MenuFlyoutItem Tag="{Binding Email}" Text="Copy e-mail" Click="ContextMenu_Copy_Click" />
+                                </MenuFlyout>
+                            </Rectangle.ContextFlyout>
                         </Rectangle>
                     </Grid>
                 </DataTemplate>
@@ -94,7 +110,7 @@
             Foreground="Gray"
             Margin="8,0,0,0"
             Grid.Row="2" />
-        
+
         <Grid x:Name="Kurukuru" Visibility="Collapsed" Grid.Row="1" Background="#aaffffff">
             <ProgressRing Height="48" Width="48" IsActive="True" />
         </Grid>
