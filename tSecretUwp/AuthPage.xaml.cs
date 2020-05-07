@@ -1,22 +1,14 @@
 ﻿// (c) 2019 Manabu Tonosaki
 // Licensed under the MIT license.
 
-using Microsoft.Identity.Client;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Tono;
 using Tono.Gui.Uwp;
 using tSecretCommon;
 using Windows.Security.Credentials.UI;
-using Windows.Services.Maps;
-using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -143,7 +135,7 @@ namespace tSecretUwp
                 Setting.SaveFile();
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await Task.Delay(0);
                 scene.Message.WriteLine($"Save setting exception : {ex.Message}");

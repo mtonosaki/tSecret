@@ -1,12 +1,11 @@
-﻿using Microsoft.Identity.Client;
+﻿// (c) 2019 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Tono;
@@ -46,7 +45,7 @@ namespace tSecretUwp
                 var firstAccount = accounts.FirstOrDefault();
                 authResult = await clientApp.AcquireTokenSilent(scopes, firstAccount).ExecuteAsync(node.CTS.Token).ConfigureAwait(false); // Login automatically
                 IsAuthenticated = true;
-                
+
                 ret = true;
             }
             catch (MsalUiRequiredException)
@@ -147,10 +146,10 @@ namespace tSecretUwp
 
         public string TenantID => authResult?.TenantId;
 
-        public override string UserObjectID 
+        public override string UserObjectID
         {
             get => authResult?.UniqueId;
-            protected set => base.UserObjectID = value; 
+            protected set => base.UserObjectID = value;
         }
 
         /// <summary>
