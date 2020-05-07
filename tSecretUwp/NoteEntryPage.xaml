@@ -39,13 +39,17 @@
             <CommandBar.Content>
                 <Button Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalAlignment="Top" Click="BackButton_Click"/>
             </CommandBar.Content>
+            <AppBarButton Icon="Cancel" Click="ClearClipBoard_Click" />
             <AppBarToggleButton Icon="Delete" Label="Deleted" IsChecked="{x:Bind Note.IsDeleted, Mode=TwoWay}" />
             <AppBarButton Icon="List" Label="History" Click="History_Click" />
         </CommandBar>
 
 
         <!--CAPTION-->
-        <TextBlock Grid.Row="1" Text="Record Caption" Grid.ColumnSpan="3" FontWeight="Bold" />
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" >
+            <TextBlock x:Name="ClearClipboard" HorizontalAlignment="Right" Margin="0,0,32,0" Text="The clipboard text has been erased." FontSize="12" Foreground="Pink" Visibility="Collapsed" />
+            <TextBlock Text="Record Caption" FontWeight="Bold" />
+        </StackPanel>
         <Rectangle Grid.Row="2" Grid.Column="0" Width="6" Height="6" Fill="LightGray" />
         <TextBlock Grid.Row="2" Grid.Column="1" Text="Rubi" VerticalAlignment="Center" />
         <TextBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,5,0,5" Text="{x:Bind Note.CaptionRubi,Mode=TwoWay}" />
@@ -112,7 +116,7 @@
             TextWrapping="NoWrap"
             IsSpellCheckEnabled="False"
             Text="{x:Bind Note.Memo,Mode=TwoWay}"/>
-        
+
         <!--BUTTONS-->
         <Grid Grid.Row="15" Grid.ColumnSpan="5">
             <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="10" Text="{x:Bind Note.ID, Mode=OneTime}" Foreground="Gray" />

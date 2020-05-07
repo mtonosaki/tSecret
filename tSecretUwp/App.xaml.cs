@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using Tono.Gui.Uwp;
 using tSecretCommon;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -58,6 +59,8 @@ namespace tSecretUwp
 
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
+            ClipboardUtil.Current.Set("");
+
             if (Auth.IsAuthenticated)
             {
                 Persister.SaveFile();

@@ -33,6 +33,7 @@
             <AppBarSeparator />
             <AppBarToggleButton x:Name="ShowDeleted" Icon="ShowResults" Label="Deleted" Style="{StaticResource AppBarToggleButtonRevealStyle}" Click="ShowDeleted_Click" />
             <AppBarButton Icon="Sync" Label="Sync" Click="Button_Sync_Click"/>
+            <AppBarButton Icon="Cancel" Click="ClearClipBoard_Click"/>
             <AppBarButton Icon="Add" Label="New" KeyboardAcceleratorPlacementMode="Auto" Click="NewButton_Click">
                 <AppBarButton.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="N" />
@@ -93,6 +94,7 @@
             Foreground="Gray"
             Margin="8,0,0,0"
             Grid.Row="2" />
+        
         <Grid x:Name="Kurukuru" Visibility="Collapsed" Grid.Row="1" Background="#aaffffff">
             <ProgressRing Height="48" Width="48" IsActive="True" />
         </Grid>

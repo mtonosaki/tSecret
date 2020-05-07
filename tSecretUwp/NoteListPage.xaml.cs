@@ -286,5 +286,11 @@ namespace tSecretUwp
                 await new MessageDialog($"Your have not logged in yet (LOCAL Mode)", "tSecret").ShowAsync();
             }
         }
+
+        private void ClearClipBoard_Click(object sender, RoutedEventArgs e)
+        {
+            ClipboardUtil.Current.Set("");
+            log("The clipboard text has been erased.");
+        }
     }
 }

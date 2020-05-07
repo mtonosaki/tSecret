@@ -11,8 +11,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
-// 空白ページの項目テンプレートについては、https://go.microsoft.com/fwlink/?LinkId=234238 を参照してください
-
 namespace tSecretUwp
 {
     /// <summary>
@@ -30,6 +28,12 @@ namespace tSecretUwp
         {
             Note = e.Parameter as Note;
             base.OnNavigatedTo(e);
+        }
+
+        private void ClearClipBoard_Click(object sender, RoutedEventArgs e)
+        {
+            ClipboardUtil.Current.Set("");
+            showCopiedText(ClearClipboard);
         }
 
         private void CopyAccount_Click(object sender, RoutedEventArgs e)
@@ -52,13 +56,13 @@ namespace tSecretUwp
 
         private void showCopiedText(TextBlock tar)
         {
-            IEnumerable<TextBlock> ls = new[] { CopiedAccount, CopiedPassword, CopiedEmail };   // Enum labeled "Copied password"
+            var ls = new[] { CopiedAccount, CopiedPassword, CopiedEmail, ClearClipboard };   // Enum labeled "Copied password"
             foreach (var l in ls.Where(a => ReferenceEquals(a, tar) == false))
             {
                 l.Visibility = Visibility.Collapsed;
             }
             tar.Visibility = Visibility.Visible;
-            DelayUtil.Start(TimeSpan.FromSeconds(1), () => tar.Visibility = Visibility.Collapsed);
+            DelayUtil.Start(TimeSpan.FromSeconds(1.5), () => tar.Visibility = Visibility.Collapsed);
         }
 
 
