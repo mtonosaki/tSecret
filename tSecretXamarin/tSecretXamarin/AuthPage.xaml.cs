@@ -60,7 +60,7 @@ namespace tSecretXamarin
             };
             var pinCheck = new StoryNode
             {
-                Task = scene => PinAuthenticationAsync(scene),
+                Task = scene => DeviceAuthenticationAsync(scene),
                 TaskName = "Pin Authentication",
                 Success = loadPrivacy,
                 Error = showError,
@@ -97,7 +97,7 @@ namespace tSecretXamarin
                 TaskName = "Set Offline Mode",
                 Success = new StoryNode
                 {
-                    Task = scene => PinAuthenticationAsync(scene),
+                    Task = scene => DeviceAuthenticationAsync(scene),
                     TaskName = "Pin Authentication",
                     Success = loadData,
                     Error = showError,
@@ -225,21 +225,20 @@ namespace tSecretXamarin
 
         private async Task<bool> NextPageAsync(StoryNode scene)
         {
+            Application.Current.Properties["LoginUtc"] = DateTime.UtcNow;
             Device.BeginInvokeOnMainThread(() =>
             {
-                Application.Current.Properties["LoginUtc"] = DateTime.UtcNow;
-                // await Navigation.PushAsync(new NoteListPage()); // TODO:
+                _ = Navigation.PushAsync(new NoteListPage());
             });
-            await Task.Delay(0);
             return true;
         }
 
-        private async Task<bool> PinAuthenticationAsync(StoryNode scene)
+        private async Task<bool> DeviceAuthenticationAsync(StoryNode scene)
         {
             var ti = DependencyService.Get<IAuthService>(); // get device authentication service
             if (ti == null)
             {
-                scene.Message.WriteLine($"ERROR: No capability of local authentication");
+                scene.Message.WriteLine($"No device authentication capability");
                 scene.Message.WriteLine($"(E902)");
                 return false;
             }
@@ -250,7 +249,7 @@ namespace tSecretXamarin
             }
             else
             {
-                scene.Message.WriteLine($"PIN Authentication exception");
+                scene.Message.WriteLine($"Device Authentication exception");
                 scene.Message.WriteLine($"(E901)");
             }
             return ret;

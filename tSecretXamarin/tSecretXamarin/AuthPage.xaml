@@ -40,8 +40,11 @@
             <Label x:Name="ErrorMessage"
                    IsVisible="False"
                    d:IsVisible="True"
-                   HorizontalOptions="Center"
+                   HorizontalOptions="FillAndExpand"
                    VerticalOptions="StartAndExpand"
+                   MinimumWidthRequest="999"
+                   HorizontalTextAlignment="Center"
+                   TextColor="Orange"
                    Text="Authentication error" />
         </StackLayout>
     </ContentPage.Content>

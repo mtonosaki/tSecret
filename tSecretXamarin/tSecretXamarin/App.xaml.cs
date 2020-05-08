@@ -26,7 +26,7 @@ namespace tSecretXamarin
                 UIParent = () => ParentWindow,
                 MainActivity = () => MainActivity,
             };
-            ParentWindow = MainPage = new AuthPage();
+            ParentWindow = MainPage = new NavigationPage(new AuthPage());
         }
 
         protected override void OnStart()
