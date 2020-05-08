@@ -48,7 +48,7 @@ namespace tSecretCommon
         /// <summary>
         /// for Xamarin.Forms
         /// </summary>
-        public virtual string IosKeychainSecurityGroups => "";
+        public virtual string IosKeychainSecurityGroups => "com.tomarika.tsecret";
     }
 
     /// <summary>

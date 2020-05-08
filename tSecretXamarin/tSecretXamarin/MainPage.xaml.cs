@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Identity.Client;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -16,6 +17,24 @@ namespace tSecretXamarin
         public MainPage()
         {
             InitializeComponent();
+        }
+
+        protected override async void OnAppearing()
+        {
+            try
+            {
+                var accounts = await App.AuthenticationClient.GetAccountsAsync();
+                var result = await App.AuthenticationClient
+                    .AcquireTokenSilent(new[] { "user.read" }, accounts.FirstOrDefault())
+                    .ExecuteAsync();
+
+                //await Navigation.PushAsync(new LogoutPage(result));
+            }
+            catch
+            {
+                // Do nothing - the user isn't logged in
+            }
+            base.OnAppearing();
         }
     }
 }
