@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("tSecretXamarin.iOS")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("tSecret")]
+[assembly: AssemblyDescription("tSecret Xamarin Forms Version")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Manabu Tonosaki")]
 [assembly: AssemblyProduct("tSecretXamarin.iOS")]

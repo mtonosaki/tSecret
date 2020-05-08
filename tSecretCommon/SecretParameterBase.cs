@@ -44,6 +44,11 @@ namespace tSecretCommon
         /// Microsoft Graph API endpoint URI
         /// </summary>
         public virtual string GraphAPIEndpoint => "https://graph.microsoft.com/v1.0/me";
+
+        /// <summary>
+        /// for Xamarin.Forms
+        /// </summary>
+        public virtual string IosKeychainSecurityGroups => "";
     }
 
     /// <summary>
