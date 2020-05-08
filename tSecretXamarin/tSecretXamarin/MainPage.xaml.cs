@@ -21,18 +21,33 @@ namespace tSecretXamarin
 
         protected override async void OnAppearing()
         {
+            var scopes = new[] { "user.read" };
+            AuthenticationResult authResult = null;
+
+            var accounts = await App.AuthenticationClient.GetAccountsAsync();
             try
             {
-                var accounts = await App.AuthenticationClient.GetAccountsAsync();
-                var result = await App.AuthenticationClient
-                    .AcquireTokenSilent(new[] { "user.read" }, accounts.FirstOrDefault())
+                authResult = await App.AuthenticationClient
+                    .AcquireTokenSilent(scopes, accounts.FirstOrDefault())
                     .ExecuteAsync();
-
-                //await Navigation.PushAsync(new LogoutPage(result));
             }
-            catch
+            catch (MsalUiRequiredException ex)
             {
-                // Do nothing - the user isn't logged in
+                try
+                {
+                    authResult = await App.AuthenticationClient
+                        .AcquireTokenInteractive(scopes)
+                        .WithParentActivityOrWindow(App.ParentWindow)
+                        .ExecuteAsync();
+                }
+                catch (Exception ex2)
+                {
+                    await DisplayAlert("Acquire token interactive failed. See exception message for details: ", ex2.Message, "Dismiss");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Acquire token interactive failed. See exception message for details: ", ex.Message, "Dismiss");
             }
             base.OnAppearing();
         }

@@ -9,21 +9,22 @@ namespace tSecretXamarin
     public partial class App : Application
     {
         public static IPublicClientApplication AuthenticationClient { get; private set; }
-        public static object ParentWindow { get; set; } = null;
-
+        public static object ParentWindow { get; set; }
+        public object MainActivity { get; set; }
 
         public App()
         {
             InitializeComponent();
-            var param = new MySecretParameter();
+            var param = new MySecretParameterXamarin();
 
             AuthenticationClient = PublicClientApplicationBuilder.Create(param.AzureADClientId)
                     .WithAuthority(param.AuthorityAudience)
                     .WithRedirectUri(param.PublicClientRedirectUri)
                     .WithIosKeychainSecurityGroup(param.IosKeychainSecurityGroups)
+                    .WithParentActivityOrWindow(() => MainActivity ?? ParentWindow) // for Android ?
                     .Build();
 
-            MainPage = new MainPage();
+            ParentWindow = MainPage = new MainPage();
         }
 
         protected override void OnStart()
