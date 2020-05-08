@@ -40,6 +40,8 @@ namespace tSecretCommon
         /// </summary>
         public virtual string PublicClientRedirectUri => "https://login.microsoftonline.com/common/oauth2/nativeclient";
 
+        public const string RedirectUrlScheme = "msal{AzureADClientId here}";
+
         /// <summary>
         /// Microsoft Graph API endpoint URI
         /// </summary>
