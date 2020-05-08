@@ -23,14 +23,14 @@ namespace tSecretXamarin.Droid
 
         private async Task<bool> Authenticate()
         {
-            SimpleAuthCallbacks callback = new SimpleAuthCallbacks();
-            Android.Content.Context context = Android.App.Application.Context;
-            Permission isUsingFingerprint = ContextCompat.CheckSelfPermission(context, Manifest.Permission.UseFingerprint);
+            var callback = new SimpleAuthCallbacks();
+            var context = Android.App.Application.Context;
+            var isUsingFingerprint = ContextCompat.CheckSelfPermission(context, Manifest.Permission.UseFingerprint);
             if (isUsingFingerprint == Permission.Granted)
             {
-                Android.Support.V4.OS.CancellationSignal cancellationSignal = new Android.Support.V4.OS.CancellationSignal();
-                CryptoObjectHelper cryptHelper = new CryptoObjectHelper();
-                FingerprintManagerCompat fingerprintManager = FingerprintManagerCompat.From(context);
+                var cancellationSignal = new Android.Support.V4.OS.CancellationSignal();
+                var cryptHelper = new CryptoObjectHelper();
+                var fingerprintManager = FingerprintManagerCompat.From(context);
                 fingerprintManager.Authenticate(
                     cryptHelper.BuildCryptoObject(),
                     (int)FingerprintAuthenticationFlags.None, /* flags */

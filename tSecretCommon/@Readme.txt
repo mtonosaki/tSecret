@@ -3,7 +3,7 @@ Add Redirect URL "msalabcdef12-1234-1234-1234-1234567890ab://auth"	"msal" + {Cli
 	(Android catch intent of above scheme)
 
 *Android Project
-Manifest : ACCESS_NETWORK_STATE,  INTERNET
+Manifest : ACCESS_NETWORK_STATE,  INTERNET,   USE_FINGERPRINT
 
 *iOS Project
 
