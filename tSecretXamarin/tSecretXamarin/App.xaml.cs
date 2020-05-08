@@ -8,23 +8,25 @@ namespace tSecretXamarin
 {
     public partial class App : Application
     {
-        public static IPublicClientApplication AuthenticationClient { get; private set; }
         public static object ParentWindow { get; set; }
         public object MainActivity { get; set; }
+
+        public AuthAzureAD Auth { get; }
+        public NotePersister Persister { get; }
+        public SettingPersister Setting { get; set; }
 
         public App()
         {
             InitializeComponent();
-            var param = new MySecretParameterXamarin();
 
-            AuthenticationClient = PublicClientApplicationBuilder.Create(param.AzureADClientId)
-                    .WithAuthority(param.AuthorityAudience)
-                    .WithRedirectUri(param.PublicClientRedirectUri)
-                    .WithIosKeychainSecurityGroup(param.IosKeychainSecurityGroups)
-                    .WithParentActivityOrWindow(() => MainActivity ?? ParentWindow) // for Android ?
-                    .Build();
-
-            ParentWindow = MainPage = new MainPage();
+            Setting = new SettingPersister();
+            Persister = new NotePersister();
+            Auth = new AuthAzureAD
+            {
+                UIParent = () => ParentWindow,
+                MainActivity = () => MainActivity,
+            };
+            ParentWindow = MainPage = new AuthPage();
         }
 
         protected override void OnStart()
@@ -33,10 +35,25 @@ namespace tSecretXamarin
 
         protected override void OnSleep()
         {
+            MainPage = new NavigationPage(new AuthPage
+            {
+                FirstErrorMessage = "Sleeped",
+            });
         }
 
         protected override void OnResume()
         {
+            if (Current.Properties.ContainsKey("LoginUtc"))
+            {
+                var dt = (DateTime)Current.Properties["LoginUtc"];
+                if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(30))
+                {
+                    MainPage = new NavigationPage(new AuthPage
+                    {
+                        FirstErrorMessage = "Login-timeout",
+                    });
+                }
+            }
         }
     }
 }

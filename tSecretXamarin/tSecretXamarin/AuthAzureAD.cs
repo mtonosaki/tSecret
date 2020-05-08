@@ -1,7 +1,6 @@
-﻿// (c) 2019 Manabu Tonosaki
+﻿// (c) 2020 Manabu Tonosaki
 // Licensed under the MIT license.
 
-#if false
 using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using System;
@@ -14,11 +13,17 @@ using tSecretCommon;
 
 namespace tSecretXamarin
 {
-    public class AuthenticatorAzureAD : Authenticator
+    public class AuthAzureAD
     {
-        public object UIParent { get; set; } = null;
+        public string DisplayName { get; protected set; }
+        public bool IsAuthenticated { get; protected set; }
+        public string TenantID => authResult?.TenantId;
+        public string UserObjectID => authResult?.UniqueId;
+        public Func<object> UIParent { get; set; }
+        public Func<object> MainActivity { get; set; }
+
         private readonly string[] scopes = new[] { "user.read" };
-        private readonly MySecretParameter param = new MySecretParameter();
+        private readonly MySecretParameter param = new MySecretParameterXamarin();
         private IPublicClientApplication clientApp = null;
         private AuthenticationResult authResult = null;
 
@@ -29,14 +34,16 @@ namespace tSecretXamarin
                 IsAuthenticated = false;
 
                 clientApp = PublicClientApplicationBuilder.Create(param.AzureADClientId)
+                    .WithAuthority(param.AuthorityAudience)
+                    .WithRedirectUri(param.PublicClientRedirectUri)
                     .WithIosKeychainSecurityGroup(param.IosKeychainSecurityGroups)
-                    .WithB2CAuthority(param.AuthorityAudience)  // TODO:
-                    .WithRedirectUri($"msal{param.AzureADClientId}://auth")
+                    .WithParentActivityOrWindow(() => MainActivity?.Invoke() ?? UIParent?.Invoke())
                     .Build();
             }
         }
 
-        public override async Task<bool> LoginSilentAsync(Func<StoryNode> lazynode)
+
+        public async Task<bool> LoginSilentAsync(Func<StoryNode> lazynode)
         {
             var node = lazynode();
             Initialize();
@@ -45,9 +52,11 @@ namespace tSecretXamarin
             {
                 var accounts = await clientApp.GetAccountsAsync();
                 var firstAccount = accounts.FirstOrDefault();
-                authResult = await clientApp.AcquireTokenSilent(scopes, firstAccount).ExecuteAsync(node.CTS.Token); // Login automatically
-                IsAuthenticated = true;
+                authResult = await clientApp
+                                .AcquireTokenSilent(scopes, accounts.FirstOrDefault())
+                                .ExecuteAsync(node.CTS.Token);   // Login automatically
 
+                IsAuthenticated = true;
                 ret = true;
             }
             catch (MsalUiRequiredException)
@@ -64,7 +73,7 @@ namespace tSecretXamarin
             return ret;
         }
 
-        public override async Task<bool> LoginInteractiveAsync(Func<StoryNode> lazynode)
+        public async Task<bool> LoginInteractiveAsync(Func<StoryNode> lazynode)
         {
             var node = lazynode();
             Initialize();
@@ -72,10 +81,10 @@ namespace tSecretXamarin
             try
             {
                 authResult = await clientApp
-                                            .AcquireTokenInteractive(scopes)
-                                            .WithPrompt(Prompt.SelectAccount)
-                                            .WithParentActivityOrWindow(UIParent)
-                                            .ExecuteAsync();
+                    .AcquireTokenInteractive(scopes)
+                    .WithPrompt(Prompt.SelectAccount)
+                    .WithParentActivityOrWindow(UIParent?.Invoke())
+                    .ExecuteAsync();
 
                 IsAuthenticated = true;
                 ret = true;
@@ -96,7 +105,7 @@ namespace tSecretXamarin
             }
             return ret;
         }
-        public override async Task<bool> LogoutAsync(Func<StoryNode> lazynode)
+        public async Task<bool> LogoutAsync(Func<StoryNode> lazynode)
         {
             var node = lazynode();
             var ret = false;
@@ -124,12 +133,12 @@ namespace tSecretXamarin
             return ret;
         }
 
-        public override async Task<bool> GetPrivacyDataAsync(Func<StoryNode> lazynode)
+
+        public async Task<bool> GetPrivacyDataAsync(Func<StoryNode> lazynode)
         {
             var node = lazynode();
             if (IsAuthenticated && authResult != null)
             {
-                var param = new MySecretParameter();
                 var content = await GetHttpContentWithTokenAsync(param.GraphAPIEndpoint, authResult.AccessToken, node.CTS.Token, node.Message)
                                     .ConfigureAwait(false);
                 if (string.IsNullOrEmpty(content))
@@ -152,14 +161,6 @@ namespace tSecretXamarin
             }
         }
 
-        public string TenantID => authResult?.TenantId;
-
-        public override string UserObjectID
-        {
-            get => authResult?.UniqueId;
-            protected set => base.UserObjectID = value;
-        }
-
         /// <summary>
         /// Perform an HTTP GET request to a URL using an HTTP Authorization header
         /// </summary>
@@ -180,7 +181,7 @@ namespace tSecretXamarin
             }
             catch (Exception ex)
             {
-                log?.WriteLine($"Signing-out user:");
+                log?.WriteLine($"Signing user:");
                 log?.WriteLine(ex.Message);
                 log?.WriteLine("(E114)");
                 return "";
@@ -188,4 +189,3 @@ namespace tSecretXamarin
         }
     }
 }
-#endif
