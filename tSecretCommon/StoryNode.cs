@@ -12,10 +12,11 @@ namespace tSecretCommon
     {
         public StreamWriter Message { get; set; }
         public CancellationTokenSource CTS { get; set; }
-        public Func<StoryNode, Task<bool>> Task { get; set; }
+        public Action<StoryNode> Task { get; set; }
         public string TaskName { get; set; }
         public StoryNode Success { get; set; }
         public StoryNode Error { get; set; }
+        public bool? TaskResult { get; set; } = null;
 
         public override string ToString()
         {

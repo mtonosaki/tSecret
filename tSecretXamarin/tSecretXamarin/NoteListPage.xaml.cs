@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using Tono;
 using tSecretCommon;
 using tSecretCommon.Models;
@@ -161,7 +162,7 @@ namespace tSecretXamarin
         {
             if (str == null)
             {
-                StatusBar.Text = "tSecret (c)2019 Manabu Tonosaki Allrights reserved.";
+                StatusBar.Text = "tSecret (c)2019 Manabu Tonosaki";
             }
             else
             {
@@ -179,7 +180,7 @@ namespace tSecretXamarin
             }
             catch (Exception ex)
             {
-                await DisplayAlert("ERROR:tSecret", $"クラウド同期に失敗しました。\r\n{ex.Message}", "Cancel");
+                await DisplayAlert("ERROR:tSecret", $"Cloud communication exception.\r\n{ex.Message}", "Cancel");
                 log(null);
                 listView.IsRefreshing = false;
             }
@@ -192,11 +193,11 @@ namespace tSecretXamarin
                 KurukuruIn();
                 await syncProc();
                 KurukuruOut();
-                await DisplayAlert("tSecret", $"クラウドと同期しました。", "OK");
+                await DisplayAlert("tSecret", $"The tSecret data have been saved into cloud server.", "OK");
             }
             catch (Exception ex)
             {
-                await DisplayAlert("ERROR:tSecret", $"クラウド同期に失敗しました。\r\n{ex.Message}", "Cancel");
+                await DisplayAlert("ERROR:tSecret", $"Cloud communication exception.\r\n{ex.Message}", "Cancel");
                 log(null);
                 KurukuruOut();
             }
@@ -219,11 +220,11 @@ namespace tSecretXamarin
                 await Persister.Upload();
                 log(null);
                 KurukuruOut();
-                await DisplayAlert("tSecret", $"クラウドに保存しました。", "OK");
+                await DisplayAlert("tSecret", $"The tSecret data have been saved into cloud server.", "OK");
             }
             catch (Exception ex)
             {
-                await DisplayAlert("ERROR:tSecret", $"クラウド保存に失敗しました。\r\n{ex.Message}", "Cancel");
+                await DisplayAlert("ERROR:tSecret", $"Cloud communication exception.\r\n{ex.Message}", "Cancel");
                 log(null);
                 KurukuruOut();
             }
@@ -239,11 +240,11 @@ namespace tSecretXamarin
                 Refresh();
                 log(null);
                 KurukuruOut();
-                await DisplayAlert("tSecret", $"クラウドからロードしました。", "OK");
+                await DisplayAlert("tSecret", $"Load cloud data successfully.", "OK");
             }
             catch (Exception ex)
             {
-                await DisplayAlert("ERROR:tSecret", $"クラウドロードに失敗しました。\r\n{ex.Message}", "Cancel");
+                await DisplayAlert("ERROR:tSecret", $"Cloud communication exception.\r\n{ex.Message}", "Cancel");
                 log(null);
                 KurukuruOut();
             }
@@ -304,6 +305,32 @@ namespace tSecretXamarin
             {
                 CrossClipboard.Current.SetText(note.Password);
                 log($"Copy Password : {StrUtil.Repeat("●", note.Password.Length)}");
+            }
+        }
+
+        private async void OnLogoffButton(object sender, EventArgs e)
+        {
+            if (Auth.IsAuthenticated)
+            {
+                LogoffButton.IsEnabled = false;
+                Persister.SaveFile();
+
+                await Auth.LogoutAsync(() => new StoryNode { CTS = new CancellationTokenSource(5000), });
+
+                if (Auth.IsAuthenticated == false)
+                {
+                    Application.Current.MainPage.Title = "";
+
+                    await Navigation.PopAsync();
+                }
+                else
+                {
+                    LogoffButton.IsEnabled = Auth.IsAuthenticated;
+                }
+            }
+            else
+            {
+                await DisplayAlert($"Your have not logged in yet (LOCAL Mode)", "tSecret", "Ignore");
             }
         }
     }

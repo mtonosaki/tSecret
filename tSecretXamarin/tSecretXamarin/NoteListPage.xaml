@@ -7,6 +7,15 @@
              x:Class="tSecretXamarin.NoteListPage"
              NavigationPage.HasBackButton="False">
     <ContentPage.ToolbarItems>
+        <ToolbarItem x:Name="LogoffButton"
+                     Text="Logoff"
+                     Clicked="OnLogoffButton">
+            <ToolbarItem.IconImageSource>
+                <OnPlatform x:TypeArguments="FileImageSource">
+                    <On Platform="UWP" Value="cc_btn_checked0.png" />
+                </OnPlatform>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
         <ToolbarItem x:Name="ShowAllButton"
                      Text="Active"
                      Clicked="OnShowAllClicked">
