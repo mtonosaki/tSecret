@@ -39,17 +39,6 @@ namespace tSecretXamarin
 
         protected override void OnResume()
         {
-            if (Current.Properties.ContainsKey("LoginUtc"))
-            {
-                var dt = (DateTime)Current.Properties["LoginUtc"];
-                if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(30))
-                {
-                    MainPage = new NavigationPage(new AuthPage
-                    {
-                        FirstErrorMessage = "Login-timeout",
-                    });
-                }
-            }
         }
     }
 }

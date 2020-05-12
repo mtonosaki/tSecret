@@ -307,7 +307,7 @@ namespace tSecretXamarin
             cut.CTS = cts;
             var status = Statues.WaitingExec;
 
-            Device.StartTimer(TimeSpan.FromMilliseconds(20), () =>
+            Device.StartTimer(TimeSpan.FromMilliseconds(100), () =>
             {
                 if (cut != null && cut.CTS.Token.IsCancellationRequested == false)
                 {
