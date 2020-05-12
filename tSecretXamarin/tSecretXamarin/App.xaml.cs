@@ -1,8 +1,5 @@
-﻿using Microsoft.Identity.Client;
-using System;
-using tSecretCommon;
+﻿using tSecretCommon;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
 namespace tSecretXamarin
 {

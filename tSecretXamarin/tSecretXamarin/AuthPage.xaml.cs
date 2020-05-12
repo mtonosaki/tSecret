@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -327,7 +325,7 @@ namespace tSecretXamarin
                             break;
                         case Statues.WaitingNextCut:
                             cut = cut.TaskResult == true ? cut.Success : cut.Error;
-                            if( cut != null)
+                            if (cut != null)
                             {
                                 cut.CTS = cts;
                             }

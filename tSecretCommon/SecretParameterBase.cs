@@ -23,7 +23,7 @@ namespace tSecretCommon
         /// <summary>
         /// Azure Blob Storage Connection String for sync data
         /// </summary>
-        public virtual string  AzureStorageConnectionString => "DefaultEndpointsProtocol=https;AccountName=XXXXXXX;AccountKey=XXXXXX/XXX+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/XXXXXXXXXXXXXXXXX==;EndpointSuffix=core.windows.net";
+        public virtual string AzureStorageConnectionString => "DefaultEndpointsProtocol=https;AccountName=XXXXXXX;AccountKey=XXXXXX/XXX+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/XXXXXXXXXXXXXXXXX==;EndpointSuffix=core.windows.net";
 
         /// <summary>
         /// AzureAD Application Client ID

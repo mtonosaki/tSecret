@@ -340,6 +340,6 @@ namespace tSecretXamarin
             log($"Clear Clipboard text.");
         }
 
-        
+
     }
 }
