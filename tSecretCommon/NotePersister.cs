@@ -22,9 +22,9 @@ namespace tSecretCommon
         private const string VERSION = "3.00";
         private static readonly Random rnd = new Random(DateTime.Now.Ticks.GetHashCode());
         private readonly MySecretParameter SecretParam = new MySecretParameter();
-        private string DataFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{UserObjectID}.dat");
-        private string SettingFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{UserObjectID}.dat");
-        private string BlobName => $"MainData.{UserObjectID}.dat";
+        private string DataFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{(string.IsNullOrEmpty(UserObjectID) ? "null" : UserObjectID)}.dat");
+        private string SettingFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{(string.IsNullOrEmpty(UserObjectID) ? "null" : UserObjectID)}.dat");
+        private string BlobName => $"MainData.{(string.IsNullOrEmpty(UserObjectID) ? "null" : UserObjectID)}.dat";
         private string UserObjectID = "";
 
         // Data
@@ -230,6 +230,10 @@ namespace tSecretCommon
         /// <returns></returns>
         public void LoadFile(string userObjectID, bool isForceReload = false)
         {
+            if(string.IsNullOrEmpty(userObjectID))
+            {
+                return;
+            }
             if (userObjectID.Equals(UserObjectID) == false)
             {
                 isForceReload = true;

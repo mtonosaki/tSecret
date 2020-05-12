@@ -1,5 +1,5 @@
-# tSecret (Working)
-Private Password Manager developped with Xamarin.Forms(C#) for iOS, Android and UWP projects. This manager can syncronize secret data to Azure Blob Storage.
+# tSecret Version 2.0
+Private Password Manager developped with Xamarin.Forms(C#) for iOS, Android and UWP projects. This manager can syncronize secret data to Azure Blob Storage. To specify user account, tSecret use Azure Active Directory authentication.
 
 ![](https://aqtono.com/tomarika/tsecret/tSecretIcon.png)  
 

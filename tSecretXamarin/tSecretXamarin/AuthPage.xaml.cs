@@ -25,6 +25,7 @@ namespace tSecretXamarin
             InitializeComponent();
 
             Setting.LoadFile();
+            LocalModeButton.IsEnabled = !string.IsNullOrEmpty(Setting.LastUserObjectID);
 
             // Story Build
             var showError = new StoryNode
@@ -127,7 +128,14 @@ namespace tSecretXamarin
             var task = AzureAD.LoginInteractiveAsync(() => cut);
             task.ContinueWith(delegate
             {
-                cut.TaskResult = task.Result;
+                if (string.IsNullOrEmpty(AzureAD.UserObjectID))
+                {
+                    cut.TaskResult = false;
+                }
+                else
+                {
+                    SaveSetting(cut, userObjectID: AzureAD.UserObjectID); // including cut.TaskResult = ...
+                }
             });
         }
 
@@ -230,7 +238,7 @@ namespace tSecretXamarin
 
         private void ResetControl(StoryNode cut)
         {
-            LocalModeButton.IsEnabled = true;
+            LocalModeButton.IsEnabled = !string.IsNullOrEmpty(Setting.LastUserObjectID);
             LocalModeButton.IsVisible = true;
             StartButton.IsEnabled = true;
             StartButton.IsVisible = true;
@@ -347,7 +355,7 @@ namespace tSecretXamarin
 
             XamarinUtil.ClearPageTrace(Navigation, this);
             StartButton.IsEnabled = true;
-            LocalModeButton.IsEnabled = true;
+            LocalModeButton.IsEnabled = !string.IsNullOrEmpty(Setting.LastUserObjectID);
 
             if (string.IsNullOrEmpty(FirstErrorMessage) == false)
             {
@@ -373,7 +381,7 @@ namespace tSecretXamarin
                 _currentCTS.Cancel();
             }
             StartButton.IsEnabled = false;
-            LocalModeButton.IsEnabled = true;
+            LocalModeButton.IsEnabled = !string.IsNullOrEmpty(Setting.LastUserObjectID);
             StartStory(StoryOnlineRoot);    // giveup thread pool control
         }
 
