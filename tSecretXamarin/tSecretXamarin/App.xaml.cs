@@ -35,10 +35,6 @@ namespace tSecretXamarin
 
         protected override void OnSleep()
         {
-            MainPage = new NavigationPage(new AuthPage
-            {
-                FirstErrorMessage = "Sleeped",
-            });
         }
 
         protected override void OnResume()

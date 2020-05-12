@@ -31,101 +31,109 @@ namespace tSecretXamarin
             // Story Build
             var showError = new StoryNode
             {
-                Task = AuthenticationError,
-                TaskName = "Show Authentication Error",
+                CutAction = AuthenticationError,
+                CutActionName = "Show Authentication Error",
                 Success = new StoryNode
                 {
-                    Task = ResetControl,
-                    TaskName = "Reset Control",
+                    CutAction = ResetControl,
+                    CutActionName = "Reset Control",
                 },
             };
             var moveToNext = new StoryNode
             {
-                Task = NextPage,
-                TaskName = "Next Page",
+                CutAction = NextPage,
+                CutActionName = "Next Page",
             };
             var loadData = new StoryNode
             {
-                Task = scene => LoadData(scene),
-                TaskName = $"Load Data : {Setting.LastUserObjectID}",
+                CutAction = cut => LoadData(cut),
+                CutActionName = $"Load Data : {Setting.LastUserObjectID}",
                 Success = moveToNext,
                 Error = showError,
             };
             var loadPrivacy = new StoryNode
             {
-                Task = LoadPrivacy,
-                TaskName = "Load Privacy",
+                CutAction = LoadPrivacy,
+                CutActionName = "Load Privacy",
                 Success = loadData,
                 Error = loadData,
             };
             var pinCheck = new StoryNode
             {
-                Task = DeviceAuthentication,
-                TaskName = "Pin Authentication",
+                CutAction = DeviceAuthentication,
+                CutActionName = "Pin Authentication",
                 Success = loadPrivacy,
                 Error = showError,
             };
             var authInteractive = new StoryNode
             {
-                Task = LoginInteractive,                        // ID/PW authentication
-                TaskName = "Login Interactive",
+                CutAction = LoginInteractive,                        // ID/PW authentication
+                CutActionName = "Login Interactive",
                 Success = loadPrivacy,
                 Error = showError,
             };
 
             StoryOnlineRoot = new StoryNode
             {
-                Message = new StreamWriter(new MemoryStream()), // for Root Node
+                MessageBuffer = new StreamWriter(new MemoryStream()), // for Root Node
                 CTS = new CancellationTokenSource(),            // for Root Node
-                Task = LoginSilent,                             // silent authentication
-                TaskName = "Login Silent",
+                CutAction = SetAzureADMode,
+                CutActionName = "[AzureAD ROOT] SetAzureADMode",
                 Success = new StoryNode
                 {
-                    Task = scene => SaveSetting(scene, userObjectID: AzureAD.UserObjectID),
-                    TaskName = "Save Setting",
-                    Success = pinCheck,
-                    Error = showError,
+                    MessageBuffer = new StreamWriter(new MemoryStream()),
+                    CTS = new CancellationTokenSource(),
+                    CutAction = LoginSilent,                             // silent authentication
+                    CutActionName = "Login Silent",
+                    Success = new StoryNode
+                    {
+                        CutAction = cut => SaveSetting(cut, userObjectID: AzureAD.UserObjectID),
+                        CutActionName = "Save Setting",
+                        Success = pinCheck,
+                        Error = showError,
+                    },
+                    Error = authInteractive,
                 },
-                Error = authInteractive,
+                Error = showError,
             };
 
             StoryLocalRoot = new StoryNode
             {
-                Message = new StreamWriter(new MemoryStream()), // for Root Node
+                MessageBuffer = new StreamWriter(new MemoryStream()), // for Root Node
                 CTS = new CancellationTokenSource(),            // for Root Node
-                Task = SetLocalMode,
-                TaskName = "Set Offline Mode",
+                CutAction = SetLocalMode,
+                CutActionName = "[LOCAL ROOT] Set Offline Mode",
                 Success = new StoryNode
                 {
-                    Task = DeviceAuthentication,
-                    TaskName = "Pin Authentication",
+                    CutAction = DeviceAuthentication,
+                    CutActionName = "Pin Authentication",
                     Success = loadData,
                     Error = showError,
                 },
             };
         }
 
-        private void LoginSilent(StoryNode scene)
+        private void LoginSilent(StoryNode cut)
         {
-            var task = AzureAD.LoginSilentAsync(() => scene);
+            var task = AzureAD.LoginSilentAsync(() => cut);
             task.ContinueWith(delegate
             {
-                scene.TaskResult = task.Result;
+                cut.TaskResult = task.Result;
             });
         }
 
-        private void LoginInteractive(StoryNode scene)
+        private void LoginInteractive(StoryNode cut)
         {
             var backgroundScheduler = TaskScheduler.Default;
             var uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-            var task = AzureAD.LoginInteractiveAsync(() => scene);
+            var task = AzureAD.LoginInteractiveAsync(() => cut);
             task.ContinueWith(delegate
             {
-                scene.TaskResult = task.Result;
+                cut.TaskResult = task.Result;
             });
         }
 
-        private void SaveSetting(StoryNode scene, string userObjectID = null, string displayName = null)
+        private void SaveSetting(StoryNode cut, string userObjectID = null, string displayName = null)
         {
             try
             {
@@ -139,39 +147,47 @@ namespace tSecretXamarin
                 }
                 Setting.LastLoginTimeUtc = DateTime.UtcNow;
                 Setting.SaveFile();
-                scene.TaskResult = true;
+                cut.TaskResult = true;
             }
             catch (Exception ex)
             {
-                scene.Message.WriteLine($"Save setting exception : {ex.Message}");
-                scene.Message.WriteLine("(E904)");
-                scene.TaskResult = false;
+                cut.MessageBuffer.WriteLine($"Save setting exception : {ex.Message}");
+                cut.MessageBuffer.WriteLine("(E904)");
+                cut.TaskResult = false;
             }
         }
 
-        private void LoadData(StoryNode scene)
+        private void LoadData(StoryNode cut)
         {
             var userObjectID = Setting.LastUserObjectID;
             if (string.IsNullOrEmpty(userObjectID))
             {
-                scene.Message.WriteLine($"User Object ID is not set yet.");
-                scene.Message.WriteLine($"(E905)");
-                scene.TaskResult = false;
+                cut.MessageBuffer.WriteLine($"User Object ID is not set yet.");
+                cut.MessageBuffer.WriteLine($"(E905)");
+                cut.TaskResult = false;
             }
             try
             {
                 Persister.LoadFile(userObjectID, isForceReload: true);
-                scene.TaskResult = true;
+                cut.TaskResult = true;
             }
             catch (Exception ex)
             {
-                scene.Message.WriteLine($"Load Data Exception {ex.Message}");
-                scene.Message.WriteLine($"(E903)");
-                scene.TaskResult = false;
+                cut.MessageBuffer.WriteLine($"Load Data Exception {ex.Message}");
+                cut.MessageBuffer.WriteLine($"(E903)");
+                cut.TaskResult = false;
             }
         }
 
-        private void SetLocalMode(StoryNode scene)
+        private void SetAzureADMode(StoryNode cut)
+        {
+            Setting.LoadFile();
+            StartButton.IsEnabled = false;
+            ErrorMessage.Text = "";
+            cut.TaskResult = true;
+        }
+
+        private void SetLocalMode(StoryNode cut)
         {
             Setting.LoadFile();
 
@@ -183,12 +199,12 @@ namespace tSecretXamarin
             {
                 Application.Current.MainPage.Title = $"[LOCAL]";
             }
-            scene.TaskResult = true;
+            cut.TaskResult = true;
         }
 
-        private void LoadPrivacy(StoryNode scene)
+        private void LoadPrivacy(StoryNode cut)
         {
-            var task = AzureAD.GetPrivacyDataAsync(() => scene);
+            var task = AzureAD.GetPrivacyDataAsync(() => cut);
             task.ContinueWith(delegate
             {
                 if (task.Result)
@@ -210,41 +226,42 @@ namespace tSecretXamarin
                     }
                     Application.Current.MainPage.Title = title;
                 }
-                scene.TaskResult = task.Result;
+                cut.TaskResult = task.Result;
             });
         }
 
-        private void ResetControl(StoryNode scene)
+        private void ResetControl(StoryNode cut)
         {
             LocalModeButton.IsEnabled = true;
             LocalModeButton.IsVisible = true;
             StartButton.IsEnabled = true;
             StartButton.IsVisible = true;
-            scene.TaskResult = true;
+            cut.TaskResult = true;
         }
 
-        private void AuthenticationError(StoryNode scene)
+        private void AuthenticationError(StoryNode cut)
         {
-            ErrorMessage.Text = GetMessage(scene);
+            ErrorMessage.Text = GetMessage(cut);
             ErrorMessage.IsVisible = !string.IsNullOrEmpty(ErrorMessage.Text.Trim());
-            scene.TaskResult = true;
+            cut.TaskResult = true;
         }
 
-        private void NextPage(StoryNode scene)
+        private void NextPage(StoryNode cut)
         {
             Application.Current.Properties["LoginUtc"] = DateTime.UtcNow;
-            _ = Navigation.PushAsync(new NoteListPage());   // give-up to control task scheduling.
-            scene.TaskResult = true;
+            _ = Navigation.PushAsync(new NoteListPage(), true);   // give-up to control task scheduling.
+            cut.TaskResult = true;
         }
 
-        private void DeviceAuthentication(StoryNode scene)
+        private void DeviceAuthentication(StoryNode cut)
         {
             var ti = DependencyService.Get<IAuthService>(); // get device authentication service
             if (ti == null)
             {
-                scene.Message.WriteLine($"No device authentication capability");
-                scene.Message.WriteLine($"(E902)");
-                scene.TaskResult = false;
+                cut.MessageBuffer.WriteLine($"No device authentication capability");
+                cut.MessageBuffer.WriteLine($"(E902)");
+                cut.TaskResult = false;
+                return;
             }
             var task = ti.GetAuthentication();
             task.ContinueWith(delegate
@@ -252,24 +269,24 @@ namespace tSecretXamarin
                 if (task.Result)
                 {
                     Application.Current.Properties["LoginUtc"] = DateTime.UtcNow;
-                    scene.TaskResult = true;
+                    cut.TaskResult = true;
                 }
                 else
                 {
-                    scene.Message.WriteLine($"Device Authentication exception");
-                    scene.Message.WriteLine($"(E901)");
-                    scene.TaskResult = false;
+                    cut.MessageBuffer.WriteLine($"Device Authentication exception");
+                    cut.MessageBuffer.WriteLine($"(E901)");
+                    cut.TaskResult = false;
                 }
             });
         }
 
-        private string GetMessage(StoryNode scene)
+        private string GetMessage(StoryNode cut)
         {
-            scene.Message.Flush();
-            scene.Message.BaseStream.Seek(0, SeekOrigin.Begin);
-            var sr = new StreamReader(scene.Message.BaseStream, Encoding.UTF8);
+            cut.MessageBuffer.Flush();
+            cut.MessageBuffer.BaseStream.Seek(0, SeekOrigin.Begin);
+            var sr = new StreamReader(cut.MessageBuffer.BaseStream, Encoding.UTF8);
             var ret = sr.ReadToEnd();
-            scene.Message.BaseStream.SetLength(0);
+            cut.MessageBuffer.BaseStream.SetLength(0);
             return ret;
         }
 
@@ -279,39 +296,41 @@ namespace tSecretXamarin
         {
             WaitingExec,
             WaitingCompleted,
-            WaitingNextScene,
+            WaitingNextCut,
         }
 
         private void StartStory(StoryNode rootNode)
         {
             var cts = _currentCTS = new CancellationTokenSource();
-            var mes = rootNode.Message;
-            var scene = rootNode;
+            var mes = rootNode.MessageBuffer;
+            var cut = rootNode;
+            cut.CTS = cts;
             var status = Statues.WaitingExec;
 
             Device.StartTimer(TimeSpan.FromMilliseconds(20), () =>
             {
-                if (scene != null)
+                if (cut != null && cut.CTS.Token.IsCancellationRequested == false)
                 {
                     switch (status)
                     {
                         case Statues.WaitingExec:
                             status = Statues.WaitingCompleted;
-                            Device.BeginInvokeOnMainThread(() =>
-                            {
-                                scene.CTS = cts;
-                                scene.Message = mes;
-                                scene.Task(scene);
-                            });
+                            cut.MessageBuffer = mes;
+                            cut.TaskResult = null;
+                            cut.CutAction(cut);
                             break;
                         case Statues.WaitingCompleted:
-                            if (scene.TaskResult != null)
+                            if (cut.TaskResult != null)
                             {
-                                status = Statues.WaitingNextScene;
+                                status = Statues.WaitingNextCut;
                             }
                             break;
-                        case Statues.WaitingNextScene:
-                            scene = scene.TaskResult == true ? scene.Success : scene.Error;
+                        case Statues.WaitingNextCut:
+                            cut = cut.TaskResult == true ? cut.Success : cut.Error;
+                            if( cut != null)
+                            {
+                                cut.CTS = cts;
+                            }
                             status = Statues.WaitingExec;
                             break;
                     }
@@ -327,7 +346,6 @@ namespace tSecretXamarin
         protected override void OnAppearing()
         {
             base.OnAppearing();
-
             StartButton.IsEnabled = true;
             LocalModeButton.IsEnabled = true;
 
@@ -341,15 +359,19 @@ namespace tSecretXamarin
                 ErrorMessage.Text = "";
                 ErrorMessage.IsVisible = false;
             }
-            Device.StartTimer(TimeSpan.FromMilliseconds(97), () =>
-            {
-                OnStartClicked(null, EventArgs.Empty);
-                return false;
-            });
+            //Device.StartTimer(TimeSpan.FromMilliseconds(97), () =>
+            //{
+            //    OnStartClicked(null, EventArgs.Empty);
+            //    return false;
+            //});
         }
 
         private void OnStartClicked(object sender, EventArgs e)
         {
+            if (_currentCTS != null)
+            {
+                _currentCTS.Cancel();
+            }
             StartButton.IsEnabled = false;
             LocalModeButton.IsEnabled = true;
             StartStory(StoryOnlineRoot);    // giveup thread pool control

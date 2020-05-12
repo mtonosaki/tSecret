@@ -8,11 +8,11 @@
              NavigationPage.HasBackButton="False">
     <ContentPage.ToolbarItems>
         <ToolbarItem x:Name="LogoffButton"
-                     Text="Logoff"
+                     Text="Logout"
                      Clicked="OnLogoffButton">
             <ToolbarItem.IconImageSource>
                 <OnPlatform x:TypeArguments="FileImageSource">
-                    <On Platform="UWP" Value="cc_btn_checked0.png" />
+                    <On Platform="UWP" Value="cc_btn_logout.png" />
                 </OnPlatform>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -46,7 +46,6 @@
                 <ViewCell>
                     <StackLayout Orientation="Horizontal">
                         <Label Text="{Binding Caption}"
-                               TextColor="{Binding RecordTextColor}"
                                FontAttributes="Bold" />
                         <Label Text="{Binding AccountID}"
                                FontSize="Micro" TextColor="#ff88ff" 

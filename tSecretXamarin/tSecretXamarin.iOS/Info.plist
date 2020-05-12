@@ -19,20 +19,22 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>13.4</string>
+	<string>12.2</string>
 	<key>CFBundleDisplayName</key>
 	<string>tSecret</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.tomarika.tsecret</string>
 	<key>CFBundleVersion</key>
 	<string>2.0</string>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
 	<key>CFBundleName</key>
 	<string>tSecretXamarin</string>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/AppIcon.appiconset</string>
 	<key>CFBundleShortVersionString</key>
 	<string>2.0</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+  <key>NSFaceIDUsageDescription</key>
+  <string>We will use FaceID to log you into tSecret.</string>
 </dict>
 </plist>

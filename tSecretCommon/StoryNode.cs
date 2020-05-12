@@ -10,17 +10,17 @@ namespace tSecretCommon
 {
     public class StoryNode
     {
-        public StreamWriter Message { get; set; }
+        public StreamWriter MessageBuffer { get; set; }
         public CancellationTokenSource CTS { get; set; }
-        public Action<StoryNode> Task { get; set; }
-        public string TaskName { get; set; }
+        public Action<StoryNode> CutAction { get; set; }
+        public string CutActionName { get; set; }
         public StoryNode Success { get; set; }
         public StoryNode Error { get; set; }
         public bool? TaskResult { get; set; } = null;
 
         public override string ToString()
         {
-            return $"{TaskName ?? base.ToString()}";
+            return $"{CutActionName ?? base.ToString()}";
         }
     }
 }

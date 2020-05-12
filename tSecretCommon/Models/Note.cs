@@ -84,7 +84,7 @@ namespace tSecretCommon.Models
         {
             get
             {
-                List<NoteHistRecord> list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
+                var list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
                 if (list.Count > 0)
                 {
                     return list[list.Count - 1].Value;
@@ -96,7 +96,7 @@ namespace tSecretCommon.Models
             }
             set
             {
-                List<NoteHistRecord> list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
+                var list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
                 if (list.Count == 0)
                 {
                     list.Add(NoteHistRecord.FromNow(value));
@@ -105,7 +105,7 @@ namespace tSecretCommon.Models
                 }
                 else
                 {
-                    NoteHistRecord last = list[list.Count - 1];
+                    var last = list[list.Count - 1];
                     if (last.Value?.Equals(value) ?? false)
                     {
                         return; // do nothing

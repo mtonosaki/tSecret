@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Foundation;
+﻿using Foundation;
 using LocalAuthentication;
+using System.Threading.Tasks;
 using tSecretXamarin.iOS;
 using UIKit;
 using Xamarin.Forms;
@@ -17,16 +13,33 @@ namespace tSecretXamarin.iOS
         public Task<bool> GetAuthentication()
         {
             var tcs = new TaskCompletionSource<bool>();
-            var context = new LAContext();
-            var caption = new NSString("Login to tSecret");
-            if (context.CanEvaluatePolicy(LAPolicy.DeviceOwnerAuthenticationWithBiometrics, out var ae))
+            var lac = new LAContext();
+            if (lac.CanEvaluatePolicy(LAPolicy.DeviceOwnerAuthenticationWithBiometrics, out var authError))
             {
-                var replyHandler = new LAContextReplyHandler((success, error) =>
+                if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
                 {
-                    tcs.SetResult(success);
-                });
-                context.EvaluatePolicy(LAPolicy.DeviceOwnerAuthenticationWithBiometrics, caption, replyHandler);
-            };
+                    lac.LocalizedReason = "Authorize for access to secrets"; // iOS 11
+                    lac.EvaluatePolicy(
+                        LAPolicy.DeviceOwnerAuthenticationWithBiometrics,
+                        new NSString("Login to tSecret"),
+                        new LAContextReplyHandler((isSuccess, error) =>
+                        {
+                            tcs.SetResult(isSuccess);
+                        })
+                    );
+                }
+            }
+            else if (lac.CanEvaluatePolicy(LAPolicy.DeviceOwnerAuthentication, out var authError2))
+            {
+                lac.EvaluatePolicy(
+                    LAPolicy.DeviceOwnerAuthentication,
+                    new NSString("Login to tSecret"),
+                    new LAContextReplyHandler((isSuccess, error) =>
+                    {
+                        tcs.SetResult(isSuccess);
+                    })
+                );
+            }
             return tcs.Task;
         }
     }
