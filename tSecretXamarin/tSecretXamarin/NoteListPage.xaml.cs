@@ -330,7 +330,7 @@ namespace tSecretXamarin
             }
             else
             {
-                await DisplayAlert($"Your have not logged in yet (LOCAL Mode)", "tSecret", "Ignore");
+                await DisplayAlert($"Your have not logged in yet (LOCAL Mode)", "tSecret", "Cancel");
             }
         }
 
