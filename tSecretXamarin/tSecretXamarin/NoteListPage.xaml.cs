@@ -312,21 +312,25 @@ namespace tSecretXamarin
         {
             if (Auth.IsAuthenticated)
             {
-                LogoffButton.IsEnabled = false;
-                Persister.SaveFile();
-
-                await Auth.LogoutAsync(() => new StoryNode { CTS = new CancellationTokenSource(5000), });
-                var success = Auth.IsAuthenticated == false;
-
-                if (success)
+                var res = await DisplayAlert($"tSecret", "Do you LOG-OUT now?", "LOG-OUT", "Cancel");
+                if (res)
                 {
-                    Application.Current.MainPage.Title = "";
-                    await Navigation.PushAsync(new AuthPage(), true);   // give-up to control task scheduling.
-                                                                        // give-up to use Navigation.PopToRootAsync (not working)
-                }
-                else
-                {
-                    LogoffButton.IsEnabled = true;
+                    LogoffButton.IsEnabled = false;
+                    Persister.SaveFile();
+
+                    await Auth.LogoutAsync(() => new StoryNode { CTS = new CancellationTokenSource(5000), });
+                    var success = Auth.IsAuthenticated == false;
+
+                    if (success)
+                    {
+                        Application.Current.MainPage.Title = "";
+                        await Navigation.PushAsync(new AuthPage(), true);   // give-up to control task scheduling.
+                                                                            // give-up to use Navigation.PopToRootAsync (not working)
+                    }
+                    else
+                    {
+                        LogoffButton.IsEnabled = true;
+                    }
                 }
             }
             else
