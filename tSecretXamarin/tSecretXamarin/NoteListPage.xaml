@@ -7,6 +7,15 @@
              x:Class="tSecretXamarin.NoteListPage"
              NavigationPage.HasBackButton="False">
     <ContentPage.ToolbarItems>
+        <ToolbarItem x:Name="ExitButton"
+                     Text="Quit"
+                     Clicked="OnExitButton">
+            <ToolbarItem.IconImageSource>
+                <OnPlatform x:TypeArguments="FileImageSource">
+                    <On Platform="UWP" Value="cc_btn_quit.png" />
+                </OnPlatform>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
         <ToolbarItem x:Name="LogoffButton"
                      Text="Logout"
                      Clicked="OnLogoffButton">
@@ -26,6 +35,11 @@
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
         <ToolbarItem Text="X" Clicked="OnClearClipboard">
+            <ToolbarItem.Text>
+                <OnPlatform x:TypeArguments="x:String">
+                    <On Platform="UWP" Value="ClearC+V" />
+                </OnPlatform>
+            </ToolbarItem.Text>
             <ToolbarItem.IconImageSource>
                 <OnPlatform x:TypeArguments="FileImageSource">
                     <On Platform="UWP" Value="cc_btn_clearclipboard.png" />

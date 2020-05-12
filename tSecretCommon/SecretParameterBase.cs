@@ -49,6 +49,8 @@ namespace tSecretCommon
         /// for Xamarin.Forms
         /// </summary>
         public virtual string IosKeychainSecurityGroups => "com.yourcompany.tsecret";
+
+        public const string RedirectUrlScheme = "msal{input AzureADClientId here}";
     }
 
     /// <summary>

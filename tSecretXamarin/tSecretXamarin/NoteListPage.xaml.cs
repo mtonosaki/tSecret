@@ -8,6 +8,7 @@ using Tono;
 using tSecretCommon;
 using tSecretCommon.Models;
 using Xamarin.Forms;
+using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.Xaml;
 
 namespace tSecretXamarin
@@ -340,6 +341,20 @@ namespace tSecretXamarin
             log($"Clear Clipboard text.");
         }
 
-
+        private void OnExitButton(object sender, EventArgs e)
+        {
+            switch (Device.RuntimePlatform)
+            {
+                case Device.iOS:
+                    Thread.CurrentThread.Abort();
+                    break;
+                case Device.UWP:
+                    System.Environment.Exit(0);
+                    break;
+                case Device.Android:
+                    System.Environment.Exit(0);
+                    break;
+            }
+        }
     }
 }
