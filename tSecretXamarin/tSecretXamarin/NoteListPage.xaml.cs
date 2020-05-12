@@ -33,7 +33,6 @@ namespace tSecretXamarin
 
             // Clear page change history
             XamarinUtil.ClearPageTrace(Navigation, this);
-
             Application.Current.Properties["LoginUtc"] = DateTime.UtcNow;
             Refresh();
         }
@@ -334,5 +333,13 @@ namespace tSecretXamarin
                 await DisplayAlert($"Your have not logged in yet (LOCAL Mode)", "tSecret", "Ignore");
             }
         }
+
+        private void OnClearClipboard(object sender, EventArgs e)
+        {
+            CrossClipboard.Current.SetText("");
+            log($"Clear Clipboard text.");
+        }
+
+        
     }
 }

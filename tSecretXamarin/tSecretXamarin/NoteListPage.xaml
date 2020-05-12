@@ -25,6 +25,13 @@
                 </OnPlatform>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
+        <ToolbarItem Text="X" Clicked="OnClearClipboard">
+            <ToolbarItem.IconImageSource>
+                <OnPlatform x:TypeArguments="FileImageSource">
+                    <On Platform="UWP" Value="cc_btn_clearclipboard.png" />
+                </OnPlatform>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
         <ToolbarItem Text="↓Sync↑" Clicked="OnCloudSync">
             <ToolbarItem.IconImageSource>
                 <OnPlatform x:TypeArguments="FileImageSource">

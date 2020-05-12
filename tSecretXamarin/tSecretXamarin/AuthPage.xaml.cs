@@ -307,7 +307,7 @@ namespace tSecretXamarin
             cut.CTS = cts;
             var status = Statues.WaitingExec;
 
-            Device.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+            Device.StartTimer(TimeSpan.FromMilliseconds(20), () =>
             {
                 if (cut != null && cut.CTS.Token.IsCancellationRequested == false)
                 {
@@ -346,6 +346,8 @@ namespace tSecretXamarin
         protected override void OnAppearing()
         {
             base.OnAppearing();
+
+            XamarinUtil.ClearPageTrace(Navigation, this);
             StartButton.IsEnabled = true;
             LocalModeButton.IsEnabled = true;
 
@@ -359,11 +361,11 @@ namespace tSecretXamarin
                 ErrorMessage.Text = "";
                 ErrorMessage.IsVisible = false;
             }
-            //Device.StartTimer(TimeSpan.FromMilliseconds(97), () =>
-            //{
-            //    OnStartClicked(null, EventArgs.Empty);
-            //    return false;
-            //});
+            Device.StartTimer(TimeSpan.FromMilliseconds(97), () =>
+            {
+                OnStartClicked(null, EventArgs.Empty);
+                return false;
+            });
         }
 
         private void OnStartClicked(object sender, EventArgs e)
