@@ -5,11 +5,42 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="tSecretXamarin.NoteHistoryPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="HistoryTemplate">
+                <ViewCell>
+                    <StackLayout Orientation="Horizontal">
+                        <Image Source="cc_btn_pen.png"
+                               Margin="8, 0, 0, 0"
+                               VerticalOptions="Start" />
+                        <Label Text="{Binding Value}" FontAttributes="Bold" />
+                        <Label Text="{Binding DT}"
+                               FontSize="Micro" TextColor="Gray" 
+                               Margin="4,0,8,0"
+                               HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+                </ViewCell>
+            </DataTemplate>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+            <ListView ItemsSource="{Binding CaptionHistory}"
+                      ItemTemplate="{StaticResource HistoryTemplate}"
+                      Header="Caption">
+            </ListView>
+            <ListView ItemsSource="{Binding AccountIDHistory}"
+                      ItemTemplate="{StaticResource HistoryTemplate}"
+                      Header="Account ID">
+            </ListView>
+            <ListView ItemsSource="{Binding PasswordHistory}"
+                      ItemTemplate="{StaticResource HistoryTemplate}"
+                      Header="Password">
+            </ListView>
+            <ListView ItemsSource="{Binding EmailHistory}"
+                      ItemTemplate="{StaticResource HistoryTemplate}"
+                      Header="e-mail">
+            </ListView>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
