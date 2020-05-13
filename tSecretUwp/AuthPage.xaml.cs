@@ -278,60 +278,44 @@ namespace tSecretUwp
 
         private void DeviceAuthentication(StoryNode cut)
         {
-            UserConsentVerifierAvailability available = default;
-            Task.Run(async () =>
+            var t1 = UserConsentVerifier.CheckAvailabilityAsync().AsTask();
+            t1.ContinueWith(delegate
             {
-                try
+                var available = t1.Result;
+                if (available == UserConsentVerifierAvailability.Available)
                 {
-                    available = await UserConsentVerifier.CheckAvailabilityAsync();
-                }
-                catch (Exception ex)
-                {
-                    cut.MessageBuffer.WriteLine($"Local Authentication exception");
-                    cut.MessageBuffer.WriteLine($"(E901-1)");
-                    cut.MessageBuffer.WriteLine(ex.Message);
-                    cut.TaskResult = false;
-                }
-            }).ContinueWith(delegate
-            {
-                try
-                {
-                    if (available == UserConsentVerifierAvailability.Available)
+                    _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
-                        UserConsentVerificationResult res = UserConsentVerificationResult.DeviceNotPresent;
-                        Task.Run(async () =>
+                        var t2 = UserConsentVerifier.RequestVerificationAsync("tSecret").AsTask();
+                        t2.ContinueWith(delegate
                         {
-                            res = await UserConsentVerifier.RequestVerificationAsync("tSecret");
-                        })
-                        .ContinueWith(delegate
-                        {
-                            if (res == UserConsentVerificationResult.Verified)
+                            if (t2.Result == UserConsentVerificationResult.Verified)
                             {
                                 ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
                                 cut.TaskResult = true;
                             }
                             else
                             {
-                                cut.MessageBuffer.WriteLine($"PIN Authentication stopped : {res.ToString()}");
+                                cut.MessageBuffer.WriteLine($"PIN Authentication stopped : {t2.Result}");
                                 cut.TaskResult = false;
                             }
                         });
-                    }
-                    else
-                    {
-                        cut.MessageBuffer.WriteLine($"PIN Authentication is not available.");
-                        cut.MessageBuffer.WriteLine($"(E902)");
-                        cut.TaskResult = false;
-                    }
+                    });
                 }
-                catch (Exception ex)
+                else
                 {
-                    cut.MessageBuffer.WriteLine($"Local Authentication exception");
-                    cut.MessageBuffer.WriteLine($"(E901-2)");
-                    cut.MessageBuffer.WriteLine(ex.Message);
+                    cut.MessageBuffer.WriteLine($"PIN Authentication is not available.");
+                    cut.MessageBuffer.WriteLine($"(E902)");
                     cut.TaskResult = false;
                 }
             });
+            //        catch (Exception ex)
+            //        {
+            //            cut.MessageBuffer.WriteLine($"Local Authentication exception");
+            //            cut.MessageBuffer.WriteLine($"(E901-2)");
+            //            cut.MessageBuffer.WriteLine(ex.Message);
+            //            cut.TaskResult = false;
+            //        }
         }
 
         private string GetMessage(StoryNode cut)
