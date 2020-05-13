@@ -14,7 +14,7 @@ namespace tSecretUwp
 {
     public sealed partial class App : Application
     {
-        public Authenticator Auth { get; }
+        public AuthAzureAD Auth { get; }
         public NotePersister Persister { get; }
         public SettingPersister Setting { get; set; }
 
@@ -24,7 +24,7 @@ namespace tSecretUwp
             Suspending += OnSuspending;
 
             Setting = new SettingPersister();
-            Auth = new AuthenticatorAzureAD();
+            Auth = new AuthAzureAD();
             Persister = new NotePersister();
         }
 

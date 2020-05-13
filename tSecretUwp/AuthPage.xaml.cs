@@ -20,8 +20,10 @@ namespace tSecretUwp
 {
     public sealed partial class AuthPage : Page
     {
+        public string FirstErrorMessage { get; set; } = string.Empty;
+
         private NotePersister Persister => ((App)Application.Current).Persister;
-        private AuthenticatorAzureAD AzureAD => (AuthenticatorAzureAD)((App)Application.Current).Auth;
+        private AuthAzureAD AzureAD => ((App)Application.Current).Auth;
         private SettingPersister Setting => ((App)Application.Current).Setting;
         private StoryNode StoryOnlineRoot;
         private StoryNode StoryLocalRoot;
@@ -31,95 +33,121 @@ namespace tSecretUwp
             this.InitializeComponent();
 
             Setting.LoadFile();
+            LocalModeButton.IsEnabled = !string.IsNullOrEmpty(Setting.LastUserObjectID);
 
             // Story Build
             var showError = new StoryNode
             {
-                Task = scene => AuthenticationErrorAsync(scene),
-                TaskName = "Show Authentication Error",
+                CutAction = AuthenticationError,
+                CutActionName = "Show Authentication Error",
                 Success = new StoryNode
                 {
-                    Task = scene => ResetControl(scene),
-                    TaskName = "Reset Control",
+                    CutAction = ResetControl,
+                    CutActionName = "Reset Control",
                 },
             };
             var moveToNext = new StoryNode
             {
-                Task = scene => NextPageAsync(scene),
-                TaskName = "Next Page",
+                CutAction = NextPage,
+                CutActionName = "Next Page",
             };
             var loadData = new StoryNode
             {
-                Task = scene => LoadData(scene, Setting.LastUserObjectID),
-                TaskName = $"Load Data : {Setting.LastUserObjectID}",
+                CutAction = cut => LoadData(cut),
+                CutActionName = $"Load Data : {Setting.LastUserObjectID}",
                 Success = moveToNext,
                 Error = showError,
             };
             var loadPrivacy = new StoryNode
             {
-                Task = scene => LoadPrivacyAsync(scene),
-                TaskName = "Load Privacy",
+                CutAction = LoadPrivacy,
+                CutActionName = "Load Privacy",
                 Success = loadData,
                 Error = loadData,
             };
             var pinCheck = new StoryNode
             {
-                Task = scene => PinAuthenticationAsync(scene),
-                TaskName = "Pin Authentication",
+                CutAction = DeviceAuthentication,
+                CutActionName = "Pin Authentication",
                 Success = loadPrivacy,
                 Error = showError,
             };
             var authInteractive = new StoryNode
             {
-                Task = scene => AzureAD.LoginInteractiveAsync(() => scene), // ID/PW authentication
-                TaskName = "Login Interactive",
+                CutAction = LoginInteractive,                        // ID/PW authentication
+                CutActionName = "Login Interactive",
                 Success = loadPrivacy,
                 Error = showError,
             };
 
             StoryOnlineRoot = new StoryNode
             {
-                Message = new StreamWriter(new MemoryStream()), // for Root Node
+                MessageBuffer = new StreamWriter(new MemoryStream()), // for Root Node
                 CTS = new CancellationTokenSource(),            // for Root Node
-                Task = scene => AzureAD.LoginSilentAsync(() => scene),  // silent authentication
-                TaskName = "Login Silent",
+                CutAction = SetAzureADMode,
+                CutActionName = "[AzureAD ROOT] SetAzureADMode",
                 Success = new StoryNode
                 {
-                    Task = scene => SaveSetting(scene, userObjectID: AzureAD.UserObjectID),
-                    TaskName = "Save Setting",
-                    Success = pinCheck,
-                    Error = showError,
+                    MessageBuffer = new StreamWriter(new MemoryStream()),
+                    CTS = new CancellationTokenSource(),
+                    CutAction = LoginSilent,                             // silent authentication
+                    CutActionName = "Login Silent",
+                    Success = new StoryNode
+                    {
+                        CutAction = cut => SaveSetting(cut, userObjectID: AzureAD.UserObjectID),
+                        CutActionName = "Save Setting",
+                        Success = pinCheck,
+                        Error = showError,
+                    },
+                    Error = authInteractive,
                 },
-                Error = authInteractive,
+                Error = showError,
             };
 
             StoryLocalRoot = new StoryNode
             {
-                Message = new StreamWriter(new MemoryStream()), // for Root Node
+                MessageBuffer = new StreamWriter(new MemoryStream()), // for Root Node
                 CTS = new CancellationTokenSource(),            // for Root Node
-                Task = scene => SetLocalModeAsync(scene),
-                TaskName = "Set Offline Mode",
+                CutAction = SetLocalMode,
+                CutActionName = "[LOCAL ROOT] Set Offline Mode",
                 Success = new StoryNode
                 {
-                    Task = scene => PinAuthenticationAsync(scene),
-                    TaskName = "Pin Authentication",
+                    CutAction = DeviceAuthentication,
+                    CutActionName = "Pin Authentication",
                     Success = loadData,
                     Error = showError,
                 },
             };
         }
 
-        private string GetMessage(StoryNode scene)
+        private void LoginSilent(StoryNode cut)
         {
-            scene.Message.Flush();
-            scene.Message.BaseStream.Seek(0, SeekOrigin.Begin);
-            var sr = new StreamReader(scene.Message.BaseStream, Encoding.UTF8);
-            var ret = sr.ReadToEnd();
-            scene.Message.BaseStream.SetLength(0);
-            return ret;
+            var task = AzureAD.LoginSilentAsync(() => cut);
+            task.ContinueWith(delegate
+            {
+                cut.TaskResult = task.Result;
+            });
         }
 
-        private async Task<bool> SaveSetting(StoryNode scene, string userObjectID = null, string displayName = null)
+        private void LoginInteractive(StoryNode cut)
+        {
+            var backgroundScheduler = TaskScheduler.Default;
+            var uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            var task = AzureAD.LoginInteractiveAsync(() => cut);
+            task.ContinueWith(delegate
+            {
+                if (string.IsNullOrEmpty(AzureAD.UserObjectID))
+                {
+                    cut.TaskResult = false;
+                }
+                else
+                {
+                    SaveSetting(cut, userObjectID: AzureAD.UserObjectID); // including cut.TaskResult = ...
+                }
+            });
+        }
+
+        private void SaveSetting(StoryNode cut, string userObjectID = null, string displayName = null)
         {
             try
             {
@@ -133,42 +161,48 @@ namespace tSecretUwp
                 }
                 Setting.LastLoginTimeUtc = DateTime.UtcNow;
                 Setting.SaveFile();
-                return true;
+                cut.TaskResult = true;
             }
             catch (Exception ex)
             {
-                await Task.Delay(0);
-                scene.Message.WriteLine($"Save setting exception : {ex.Message}");
-                scene.Message.WriteLine("(E904)");
-                return false;
+                cut.MessageBuffer.WriteLine($"Save setting exception : {ex.Message}");
+                cut.MessageBuffer.WriteLine("(E904)");
+                cut.TaskResult = false;
             }
         }
 
-        private async Task<bool> LoadData(StoryNode scene, string userObjectID)
+        private void LoadData(StoryNode cut)
         {
+            var userObjectID = Setting.LastUserObjectID;
             if (string.IsNullOrEmpty(userObjectID))
             {
-                scene.Message.WriteLine($"User Object ID is not set yet.");
-                scene.Message.WriteLine($"(E905)");
-                return false;
+                cut.MessageBuffer.WriteLine($"User Object ID is not set yet.");
+                cut.MessageBuffer.WriteLine($"(E905)");
+                cut.TaskResult = false;
             }
             try
             {
-                await Task.Delay(0);
                 Persister.LoadFile(userObjectID, isForceReload: true);
-                return true;
+                cut.TaskResult = true;
             }
             catch (Exception ex)
             {
-                scene.Message.WriteLine($"Load Data Exception {ex.Message}");
-                scene.Message.WriteLine($"(E903)");
-                return false;
+                cut.MessageBuffer.WriteLine($"Load Data Exception {ex.Message}");
+                cut.MessageBuffer.WriteLine($"(E903)");
+                cut.TaskResult = false;
             }
         }
 
-        private async Task<bool> SetLocalModeAsync(StoryNode scene)
+        private void SetAzureADMode(StoryNode cut)
         {
-            await Task.Delay(0);
+            Setting.LoadFile();
+            StartButton.IsEnabled = false;
+            ErrorMessage.Text = "";
+            cut.TaskResult = true;
+        }
+
+        private void SetLocalMode(StoryNode cut)
+        {
             Setting.LoadFile();
 
             if (string.IsNullOrEmpty(Setting.LastDisplayName) == false)
@@ -179,122 +213,188 @@ namespace tSecretUwp
             {
                 ApplicationView.GetForCurrentView().Title = $"[LOCAL]";
             }
-            return true;
+            cut.TaskResult = true;
         }
 
-        private async Task<bool> LoadPrivacyAsync(StoryNode scene)
+        private void LoadPrivacy(StoryNode cut)
         {
-            var ret = await AzureAD.GetPrivacyDataAsync(() => scene);
-            if (ret)
+            var task = AzureAD.GetPrivacyDataAsync(() => cut);
+            task.ContinueWith(delegate
             {
-                Setting.LastDisplayName = AzureAD.DisplayName;
-                Setting.SaveFile();
-                _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                if (task.Result)
                 {
-                    ApplicationView.GetForCurrentView().Title = AzureAD.DisplayName ?? "";
-                });
-            }
-            else
-            {
-                var title = "";
-                if (string.IsNullOrEmpty(Setting.LastDisplayName) == false)
-                {
-                    title = $"[OFFLINE?] {(Setting.LastDisplayName ?? "")}";
+                    Setting.LastDisplayName = AzureAD.DisplayName;
+                    Setting.SaveFile();
+                    _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        ApplicationView.GetForCurrentView().Title = AzureAD.DisplayName ?? "";
+                    });
                 }
                 else
                 {
-                    title = $"[OFFLINE?]";
-                }
-                _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
-                    ApplicationView.GetForCurrentView().Title = title;
-                });
-            }
-            return ret;
-        }
-
-        private async Task<bool> ResetControl(StoryNode scene)
-        {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                LocalModeButton.IsEnabled = true;
-                LocalModeButton.Visibility = Visibility.Visible;
-                StartButton.IsEnabled = true;
-                StartButton.Visibility = Visibility.Visible;
-            });
-            return true;
-        }
-
-        private async Task<bool> AuthenticationErrorAsync(StoryNode scene)
-        {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                ErrorMessage.Text = GetMessage(scene);
-                ErrorMessage.Visibility = string.IsNullOrEmpty(ErrorMessage.Text.Trim()) ? Visibility.Collapsed : Visibility.Visible;
-            });
-            await Task.Delay(300, scene.CTS.Token);
-            return true;
-        }
-
-        private async Task<bool> NextPageAsync(StoryNode scene)
-        {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
-                Frame.Navigate(typeof(NoteListPage), null, new SlideNavigationTransitionInfo
-                {
-                    Effect = SlideNavigationTransitionEffect.FromRight,
-                });
-            });
-            return true;
-        }
-
-        private async Task<bool> PinAuthenticationAsync(StoryNode scene)
-        {
-            try
-            {
-                var available = await UserConsentVerifier.CheckAvailabilityAsync();
-                if (available == UserConsentVerifierAvailability.Available)
-                {
-                    var res = await UserConsentVerifier.RequestVerificationAsync("tSecret");
-                    switch (res)
+                    var title = "";
+                    if (string.IsNullOrEmpty(Setting.LastDisplayName) == false)
                     {
-                        case UserConsentVerificationResult.Verified:
-                            return true;
-                        default:
-                            scene.Message.WriteLine($"PIN Authentication stopped : {res.ToString()}");
-                            return false;
+                        title = $"[OFFLINE?] {(Setting.LastDisplayName ?? "")}";
+                    }
+                    else
+                    {
+                        title = $"[OFFLINE?]";
+                    }
+                    _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                   {
+                       ApplicationView.GetForCurrentView().Title = title;
+                   });
+                }
+                cut.TaskResult = task.Result;
+            });
+        }
+
+        private void ResetControl(StoryNode cut)
+        {
+            LocalModeButton.IsEnabled = !string.IsNullOrEmpty(Setting.LastUserObjectID);
+            LocalModeButton.Visibility = Visibility.Visible;
+            StartButton.IsEnabled = true;
+            StartButton.Visibility = Visibility.Visible;
+            cut.TaskResult = true;
+        }
+
+        private void AuthenticationError(StoryNode cut)
+        {
+            ErrorMessage.Text = GetMessage(cut);
+            ErrorMessage.Visibility = string.IsNullOrEmpty(ErrorMessage.Text.Trim()) ? Visibility.Collapsed : Visibility.Visible;
+            cut.TaskResult = true;
+        }
+
+        private void NextPage(StoryNode cut)
+        {
+            ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
+            Frame.Navigate(typeof(NoteListPage), null, new SlideNavigationTransitionInfo
+            {
+                Effect = SlideNavigationTransitionEffect.FromRight,
+            });
+            cut.TaskResult = true;
+        }
+
+        private void DeviceAuthentication(StoryNode cut)
+        {
+            UserConsentVerifierAvailability available = default;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    available = await UserConsentVerifier.CheckAvailabilityAsync();
+                }
+                catch (Exception ex)
+                {
+                    cut.MessageBuffer.WriteLine($"Local Authentication exception");
+                    cut.MessageBuffer.WriteLine($"(E901-1)");
+                    cut.MessageBuffer.WriteLine(ex.Message);
+                    cut.TaskResult = false;
+                }
+            }).ContinueWith(delegate
+            {
+                try
+                {
+                    if (available == UserConsentVerifierAvailability.Available)
+                    {
+                        UserConsentVerificationResult res = UserConsentVerificationResult.DeviceNotPresent;
+                        Task.Run(async () =>
+                        {
+                            res = await UserConsentVerifier.RequestVerificationAsync("tSecret");
+                        })
+                        .ContinueWith(delegate
+                        {
+                            if (res == UserConsentVerificationResult.Verified)
+                            {
+                                ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
+                                cut.TaskResult = true;
+                            }
+                            else
+                            {
+                                cut.MessageBuffer.WriteLine($"PIN Authentication stopped : {res.ToString()}");
+                                cut.TaskResult = false;
+                            }
+                        });
+                    }
+                    else
+                    {
+                        cut.MessageBuffer.WriteLine($"PIN Authentication is not available.");
+                        cut.MessageBuffer.WriteLine($"(E902)");
+                        cut.TaskResult = false;
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    scene.Message.WriteLine($"PIN Authentication is not available.");
-                    scene.Message.WriteLine($"(E902)");
-                    return false;
+                    cut.MessageBuffer.WriteLine($"Local Authentication exception");
+                    cut.MessageBuffer.WriteLine($"(E901-2)");
+                    cut.MessageBuffer.WriteLine(ex.Message);
+                    cut.TaskResult = false;
                 }
-            }
-            catch (Exception ex)
-            {
-                scene.Message.WriteLine($"PIN Authentication exception");
-                scene.Message.WriteLine($"(E901)");
-                scene.Message.WriteLine(ex.Message);
-                return false;
-            }
+            });
+        }
+
+        private string GetMessage(StoryNode cut)
+        {
+            cut.MessageBuffer.Flush();
+            cut.MessageBuffer.BaseStream.Seek(0, SeekOrigin.Begin);
+            var sr = new StreamReader(cut.MessageBuffer.BaseStream, Encoding.UTF8);
+            var ret = sr.ReadToEnd();
+            cut.MessageBuffer.BaseStream.SetLength(0);
+            return ret;
         }
 
         private CancellationTokenSource _currentCTS = null;
 
-        private async Task StartStoryAsync(StoryNode rootNode)
+        private enum Statues
+        {
+            WaitingExec,
+            WaitingCompleted,
+            WaitingNextCut,
+        }
+
+        private void StartStory(StoryNode rootNode)
         {
             var cts = _currentCTS = new CancellationTokenSource();
-            var mes = rootNode.Message;
-            for (var scene = rootNode; scene != null && cts.IsCancellationRequested == false;)
+            var mes = rootNode.MessageBuffer;
+            var cut = rootNode;
+            cut.CTS = cts;
+            var status = Statues.WaitingExec;
+
+            var porlingTimer = new DispatcherTimer();
+            porlingTimer.Interval = TimeSpan.FromMilliseconds(20);
+            porlingTimer.Tick += (s, e) =>
             {
-                scene.CTS = cts;                    // inherit CTS
-                scene.Message = mes;                // inherit Message
-                var ret = await scene.Task(scene);  // Run Task
-                scene = ret ? scene.Success : scene.Error;
-            }
+                porlingTimer.Stop();
+                if (cut != null && cut.CTS.Token.IsCancellationRequested == false)
+                {
+                    switch (status)
+                    {
+                        case Statues.WaitingExec:
+                            status = Statues.WaitingCompleted;
+                            cut.MessageBuffer = mes;
+                            cut.TaskResult = null;
+                            cut.CutAction(cut);
+                            break;
+                        case Statues.WaitingCompleted:
+                            if (cut.TaskResult != null)
+                            {
+                                status = Statues.WaitingNextCut;
+                            }
+                            break;
+                        case Statues.WaitingNextCut:
+                            cut = cut.TaskResult == true ? cut.Success : cut.Error;
+                            if (cut != null)
+                            {
+                                cut.CTS = cts;
+                            }
+                            status = Statues.WaitingExec;
+                            break;
+                    }
+                    porlingTimer.Start();
+                }
+            };
+            porlingTimer.Start();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -319,8 +419,7 @@ namespace tSecretUwp
         {
             StartButton.IsEnabled = false;
             LocalModeButton.IsEnabled = true;
-
-            _ = StartStoryAsync(StoryOnlineRoot);
+            StartStory(StoryOnlineRoot);
         }
 
         private void LocalModeButton_Click(object sender, RoutedEventArgs e) // giveup thread pool control
@@ -332,8 +431,7 @@ namespace tSecretUwp
 
             StartButton.IsEnabled = false;
             LocalModeButton.IsEnabled = false;
-
-            _ = StartStoryAsync(StoryLocalRoot);
+            StartStory(StoryLocalRoot);
         }
     }
 }

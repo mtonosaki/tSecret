@@ -25,7 +25,7 @@ namespace tSecretUwp
 {
     public sealed partial class NoteListPage : Page
     {
-        private Authenticator Auth => ((App)Application.Current).Auth;
+        private AuthAzureAD Auth => ((App)Application.Current).Auth;
         private NotePersister Persister => ((App)Application.Current).Persister;
 
         public NoteListPage()

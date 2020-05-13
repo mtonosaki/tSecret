@@ -13,8 +13,11 @@ using tSecretCommon;
 
 namespace tSecretUwp
 {
-    public class AuthenticatorAzureAD : Authenticator
+    public class AuthAzureAD
     {
+        public bool IsAuthenticated { get; set; }
+        public string DisplayName { get; set; }
+
         private readonly static System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient();
         private readonly string[] scopes = new[] { "user.read" };
         private readonly MySecretParameter param = new MySecretParameter();
@@ -34,7 +37,7 @@ namespace tSecretUwp
             }
         }
 
-        public override async Task<bool> LoginSilentAsync(Func<StoryNode> lazynode)
+        public async Task<bool> LoginSilentAsync(Func<StoryNode> lazynode)
         {
             var node = lazynode();
             Initialize();
@@ -55,14 +58,14 @@ namespace tSecretUwp
             catch (Exception ex)
             {
                 authResult = null;
-                node.Message?.WriteLine($"Acquiring Token Silently:");
-                node.Message?.WriteLine(ex.Message);
-                node.Message?.WriteLine("(E101)");
+                node.MessageBuffer?.WriteLine($"Acquiring Token Silently:");
+                node.MessageBuffer?.WriteLine(ex.Message);
+                node.MessageBuffer?.WriteLine("(E101)");
             }
             return ret;
         }
 
-        public override async Task<bool> LoginInteractiveAsync(Func<StoryNode> lazynode)
+        public async Task<bool> LoginInteractiveAsync(Func<StoryNode> lazynode)
         {
             var node = lazynode();
             Initialize();
@@ -78,20 +81,20 @@ namespace tSecretUwp
             catch (MsalException msalex)
             {
                 authResult = null;
-                node.Message?.WriteLine($"Acquiring Token Interactive:");
-                node.Message?.WriteLine(msalex.Message);
-                node.Message?.WriteLine("(E102)");
+                node.MessageBuffer?.WriteLine($"Acquiring Token Interactive:");
+                node.MessageBuffer?.WriteLine(msalex.Message);
+                node.MessageBuffer?.WriteLine("(E102)");
             }
             catch (Exception ex)
             {
                 authResult = null;
-                node.Message?.WriteLine($"Acquiring Token Interactive:");
-                node.Message?.WriteLine(ex.Message);
-                node.Message?.WriteLine("(E101)");
+                node.MessageBuffer?.WriteLine($"Acquiring Token Interactive:");
+                node.MessageBuffer?.WriteLine(ex.Message);
+                node.MessageBuffer?.WriteLine("(E101)");
             }
             return ret;
         }
-        public override async Task<bool> LogoutAsync(Func<StoryNode> lazynode)
+        public async Task<bool> LogoutAsync(Func<StoryNode> lazynode)
         {
             var node = lazynode();
             var ret = false;
@@ -107,22 +110,22 @@ namespace tSecretUwp
                 }
                 catch (MsalException ex)
                 {
-                    node.Message?.WriteLine($"Signing-out user:");
-                    node.Message?.WriteLine(ex.Message);
-                    node.Message?.WriteLine("(E114)");
+                    node.MessageBuffer?.WriteLine($"Signing-out user:");
+                    node.MessageBuffer?.WriteLine(ex.Message);
+                    node.MessageBuffer?.WriteLine("(E114)");
 
                 }
             }
             return ret;
         }
 
-        public override async Task<bool> GetPrivacyDataAsync(Func<StoryNode> lazynode)
+        public async Task<bool> GetPrivacyDataAsync(Func<StoryNode> lazynode)
         {
             var node = lazynode();
             if (IsAuthenticated && authResult != null)
             {
                 var param = new MySecretParameter();
-                var content = await GetHttpContentWithTokenAsync(param.GraphAPIEndpoint, authResult.AccessToken, node.CTS.Token, node.Message)
+                var content = await GetHttpContentWithTokenAsync(param.GraphAPIEndpoint, authResult.AccessToken, node.CTS.Token, node.MessageBuffer)
                                     .ConfigureAwait(false);
                 if (string.IsNullOrEmpty(content))
                 {
@@ -138,18 +141,17 @@ namespace tSecretUwp
             }
             else
             {
-                node.Message?.WriteLine($"Warning : Could not load privacy data from Microsoft Graph");
-                node.Message?.WriteLine("(E115)");
+                node.MessageBuffer?.WriteLine($"Warning : Could not load privacy data from Microsoft Graph");
+                node.MessageBuffer?.WriteLine("(E115)");
                 return false;
             }
         }
 
         public string TenantID => authResult?.TenantId;
 
-        public override string UserObjectID
+        public string UserObjectID
         {
             get => authResult?.UniqueId;
-            protected set => base.UserObjectID = value;
         }
 
         /// <summary>
