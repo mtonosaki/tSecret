@@ -1,4 +1,7 @@
-﻿using Android;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using Android;
 using Android.Content.PM;
 using Android.Hardware.Fingerprints;
 using Android.Support.V4.Content;

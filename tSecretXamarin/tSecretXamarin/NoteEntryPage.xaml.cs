@@ -1,4 +1,7 @@
-﻿using Plugin.Clipboard;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using Plugin.Clipboard;
 using System;
 using System.Collections.Generic;
 using System.Linq;

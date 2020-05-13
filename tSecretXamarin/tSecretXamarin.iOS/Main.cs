@@ -1,4 +1,7 @@
-﻿using UIKit;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using UIKit;
 
 namespace tSecretXamarin.iOS
 {

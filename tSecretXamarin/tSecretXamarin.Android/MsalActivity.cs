@@ -1,4 +1,6 @@
-﻿
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
 using Android.App;
 using Android.Content;
 using Microsoft.Identity.Client;

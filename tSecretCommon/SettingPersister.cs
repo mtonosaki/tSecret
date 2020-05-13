@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;

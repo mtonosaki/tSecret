@@ -1,4 +1,6 @@
-﻿
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 

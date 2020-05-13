@@ -1,4 +1,7 @@
-﻿using System;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -323,7 +326,10 @@ namespace tSecretXamarin
                             status = Statues.WaitingCompleted;
                             cut.MessageBuffer = mes;
                             cut.TaskResult = null;
-                            cut.CutAction(cut);
+                            Device.BeginInvokeOnMainThread(() =>
+                            {
+                                cut.CutAction(cut);
+                            });
                             break;
                         case Statues.WaitingCompleted:
                             if (cut.TaskResult != null)

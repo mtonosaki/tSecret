@@ -230,7 +230,7 @@ namespace tSecretCommon
         /// <returns></returns>
         public void LoadFile(string userObjectID, bool isForceReload = false)
         {
-            if(string.IsNullOrEmpty(userObjectID))
+            if (string.IsNullOrEmpty(userObjectID))
             {
                 return;
             }

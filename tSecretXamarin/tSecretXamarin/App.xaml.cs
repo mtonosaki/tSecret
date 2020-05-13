@@ -1,4 +1,7 @@
-﻿using tSecretCommon;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using tSecretCommon;
 using Xamarin.Forms;
 
 namespace tSecretXamarin

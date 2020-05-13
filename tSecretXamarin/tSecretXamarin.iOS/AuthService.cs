@@ -1,4 +1,7 @@
-﻿using Foundation;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using Foundation;
 using LocalAuthentication;
 using System.Threading.Tasks;
 using tSecretXamarin.iOS;

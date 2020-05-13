@@ -20,6 +20,8 @@ namespace tSecret
         public override string TEXTSET64 => "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz/+";
         public override int IVNPP => 16;
         public override string AzureStorageConnectionString => "DefaultEndpointsProtocol=https;AccountName=XXXXXXX;AccountKey=XXXXXX/XXX+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/XXXXXXXXXXXXXXXXX==;EndpointSuffix=core.windows.net";
+        public override string IosKeychainSecurityGroups => "com.yourappname.tsecret";
+        public override string AzureADClientId => "abcdef12-abcd-cdef-0123-1234567890ab";
     }
 }
 ```

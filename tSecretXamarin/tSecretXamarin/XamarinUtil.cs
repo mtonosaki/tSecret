@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using System.Linq;
 using Xamarin.Forms;
 
 namespace tSecretXamarin

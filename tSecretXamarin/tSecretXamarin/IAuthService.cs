@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using System.Threading.Tasks;
 
 namespace tSecretXamarin
 {

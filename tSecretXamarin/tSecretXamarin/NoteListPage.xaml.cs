@@ -1,4 +1,7 @@
-﻿using Plugin.Clipboard;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using Plugin.Clipboard;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,7 +11,6 @@ using Tono;
 using tSecretCommon;
 using tSecretCommon.Models;
 using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.Xaml;
 
 namespace tSecretXamarin

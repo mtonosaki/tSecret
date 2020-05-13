@@ -1,4 +1,7 @@
-﻿using Android.Security.Keystore;
+﻿// (c) 2020 Manabu Tonosaki
+// Licensed under the MIT license.
+
+using Android.Security.Keystore;
 using Android.Support.V4.Hardware.Fingerprint;
 using Android.Util;
 using Java.Security;
