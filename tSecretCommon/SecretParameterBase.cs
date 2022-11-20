@@ -1,10 +1,8 @@
 ﻿// (c) 2019 Manabu Tonosaki
 // Licensed under the MIT license.
 
-namespace tSecretCommon
-{
-    public class SecretParameterBase
-    {
+namespace tSecretCommon {
+    public abstract class SecretParameterBase {
         /// <summary>
         /// Rijndael key
         /// </summary>
@@ -56,7 +54,6 @@ namespace tSecretCommon
     /// <summary>
     /// Private secret key (Please override key texts for your secret)
     /// </summary>
-    public partial class MySecretParameter : SecretParameterBase
-    {
+    public partial class MySecretParameter: SecretParameterBase {
     }
 }

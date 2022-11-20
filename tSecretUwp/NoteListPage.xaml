@@ -32,7 +32,7 @@
             <AppBarToggleButton x:Name="Logout" Icon="ClosePane" Label="Logout" Click="Logout_Click" />
             <AppBarSeparator />
             <AppBarToggleButton x:Name="ShowDeleted" Icon="ShowResults" Label="Deleted" Style="{StaticResource AppBarToggleButtonRevealStyle}" Click="ShowDeleted_Click" />
-            <AppBarButton Icon="Sync" Label="Sync" Click="Button_Sync_Click"/>
+            <AppBarButton Icon="Download" Label="Download" Click="Button_Sync_Click"/>
             <AppBarButton Icon="Cancel" Click="ClearClipBoard_Click"/>
             <AppBarButton Icon="Add" Label="New" KeyboardAcceleratorPlacementMode="Auto" Click="NewButton_Click">
                 <AppBarButton.KeyboardAccelerators>

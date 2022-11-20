@@ -1,16 +1,12 @@
 ﻿using System;
 
-namespace tSecretCommon.Models
-{
+namespace tSecretCommon.Models {
     /// <summary>
     /// Record of History
     /// </summary>
-    public class NoteHistRecord
-    {
-        public static NoteHistRecord FromNow(string value)
-        {
-            return new NoteHistRecord
-            {
+    public class NoteHistRecord {
+        public static NoteHistRecord FromNow(string value) {
+            return new NoteHistRecord {
                 DT = DateTime.Now,
                 Value = value,
             };
@@ -18,8 +14,7 @@ namespace tSecretCommon.Models
 
         public DateTime DT { get; set; }
         public string Value { get; set; } = "";
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"{Value} ({DT})";
         }
     }

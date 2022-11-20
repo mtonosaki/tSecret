@@ -10,16 +10,13 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace tSecretUwp
-{
-    public sealed partial class App : Application
-    {
+namespace tSecretUwp {
+    public sealed partial class App: Application {
         public AuthAzureAD Auth { get; }
         public NotePersister Persister { get; }
         public SettingPersister Setting { get; set; }
 
-        public App()
-        {
+        public App() {
             InitializeComponent();
             Suspending += OnSuspending;
 
@@ -28,44 +25,36 @@ namespace tSecretUwp
             Persister = new NotePersister();
         }
 
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
-        {
+        protected override void OnLaunched(LaunchActivatedEventArgs e) {
             Setting.LoadFile();
 
-            Frame rootFrame = Window.Current.Content as Frame;
 
-            if (rootFrame == null)
-            {
+            if (!(Window.Current.Content is Frame rootFrame)) {
                 rootFrame = new Frame();
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
                 Window.Current.Content = rootFrame;
             }
 
-            if (e.PrelaunchActivated == false)
-            {
-                if (rootFrame.Content == null)
-                {
-                    rootFrame.Navigate(typeof(AuthPage), e.Arguments);
+            if (e.PrelaunchActivated == false) {
+                if (rootFrame.Content == null) {
+                    _ = rootFrame.Navigate(typeof(AuthPage), e.Arguments);
                 }
                 Window.Current.Activate();
             }
         }
 
-        private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
-        {
+        private void OnNavigationFailed(object sender, NavigationFailedEventArgs e) {
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
-        private void OnSuspending(object sender, SuspendingEventArgs e)
-        {
+        private void OnSuspending(object sender, SuspendingEventArgs e) {
             ClipboardUtil.Current.Set("");
 
-            if (Auth.IsAuthenticated)
-            {
+            if (Auth.IsAuthenticated) {
                 Persister.SaveFile();
             }
-            var deferral = e.SuspendingOperation.GetDeferral();
+            SuspendingDeferral deferral = e.SuspendingOperation.GetDeferral();
             deferral.Complete();
         }
     }

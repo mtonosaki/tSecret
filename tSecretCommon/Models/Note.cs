@@ -5,13 +5,11 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Tono;
 
-namespace tSecretCommon.Models
-{
+namespace tSecretCommon.Models {
     /// <summary>
     /// Model data : Record of Note
     /// </summary>
-    public class Note : INotifyPropertyChanged
-    {
+    public class Note: INotifyPropertyChanged {
         /// <summary>
         /// Time Span to separate create from update action
         /// </summary>
@@ -31,23 +29,13 @@ namespace tSecretCommon.Models
         public event PropertyChangedEventHandler PropertyChanged;
 
         #region General override
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"ID={ID} / Caption={Caption} / AccountID={AccountID}";
         }
-        public override bool Equals(object obj)
-        {
-            if (obj is Note tar)
-            {
-                return tar.ID.Equals(ID);
-            }
-            else
-            {
-                return false;
-            }
+        public override bool Equals(object obj) {
+            return obj is Note tar && tar.ID.Equals(ID);
         }
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             return ID.GetHashCode();
         }
         #endregion
@@ -56,11 +44,9 @@ namespace tSecretCommon.Models
         private bool isHidePassword = true;
 
         [IgnoreDataMember]
-        public bool IsHidePassword
-        {
+        public bool IsHidePassword {
             get => isHidePassword;
-            set
-            {
+            set {
                 isHidePassword = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsHidePassword"));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("PasswordImageName"));
@@ -80,44 +66,25 @@ namespace tSecretCommon.Models
         /// <param name="key"></param>
         /// <returns></returns>
         [IgnoreDataMember]
-        public string this[string key, string def = ""]
-        {
-            get
-            {
-                var list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
-                if (list.Count > 0)
-                {
-                    return list[list.Count - 1].Value;
-                }
-                else
-                {
-                    return def;
-                }
+        public string this[string key, string def = ""] {
+            get {
+                List<NoteHistRecord> list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
+                return list.Count > 0 ? list[list.Count - 1].Value : def;
             }
-            set
-            {
-                var list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
-                if (list.Count == 0)
-                {
+            set {
+                List<NoteHistRecord> list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
+                if (list.Count == 0) {
                     list.Add(NoteHistRecord.FromNow(value));
                     IsDirty = true;
                     ValueChanged?.Invoke(this, EventArgs.Empty);
-                }
-                else
-                {
-                    var last = list[list.Count - 1];
-                    if (last.Value?.Equals(value) ?? false)
-                    {
+                } else {
+                    NoteHistRecord last = list[list.Count - 1];
+                    if (last.Value?.Equals(value) ?? false) {
                         return; // do nothing
-                    }
-                    else
-                    {
-                        if ((DateTime.Now - last.DT) > TIME_NEW_RECORD)
-                        {
+                    } else {
+                        if ((DateTime.Now - last.DT) > TIME_NEW_RECORD) {
                             list.Add(NoteHistRecord.FromNow(value));
-                        }
-                        else
-                        {
+                        } else {
                             list[list.Count - 1] = NoteHistRecord.FromNow(value);
                         }
                         IsDirty = true;
@@ -131,11 +98,9 @@ namespace tSecretCommon.Models
         public string IDString => $"ID={ID}";
 
         [IgnoreDataMember]
-        public string Caption
-        {
+        public string Caption {
             get => this["Caption"];
-            set
-            {
+            set {
                 this["Caption"] = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Caption"));
             }
@@ -151,11 +116,9 @@ namespace tSecretCommon.Models
         public string CaptionRubi1 => Japanese.Getあかさたな((this["CaptionRubi"].Trim() + " ").Substring(0, 1).ToUpper());
 
         [IgnoreDataMember]
-        public string CaptionRubi
-        {
+        public string CaptionRubi {
             get => this["CaptionRubi"];
-            set
-            {
+            set {
                 this["CaptionRubi"] = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CaptionRubi"));
             }
@@ -168,11 +131,9 @@ namespace tSecretCommon.Models
         public IEnumerable<NoteHistRecord> CaptionRubiHistory => UniversalData.GetValueOrDefault("CaptionRubi", true, k => new List<NoteHistRecord>()).OrderByDescending(a => a.DT);
 
         [IgnoreDataMember]
-        public string AccountID
-        {
+        public string AccountID {
             get => this["AccountID"];
-            set
-            {
+            set {
                 this["AccountID"] = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("AccountID"));
             }
@@ -181,43 +142,35 @@ namespace tSecretCommon.Models
         public IEnumerable<NoteHistRecord> AccountIDHistory => UniversalData.GetValueOrDefault("AccountID", true, k => new List<NoteHistRecord>()).OrderByDescending(a => a.DT);
 
         [IgnoreDataMember]
-        public string Password
-        {
+        public string Password {
             get => this["Password"];
-            set
-            {
+            set {
                 this["Password"] = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Password"));
             }
         }
         [IgnoreDataMember]
-        public string Email
-        {
+        public string Email {
             get => this["Email"];
-            set
-            {
+            set {
                 this["Email"] = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Email"));
             }
         }
 
         [IgnoreDataMember]
-        public bool IsDeleted
-        {
+        public bool IsDeleted {
             get => DbUtil.ToBoolean(this["IsDeleted"]);
-            set
-            {
+            set {
                 this["IsDeleted"] = value.ToString();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsDeleted"));
             }
         }
 
         [IgnoreDataMember]
-        public string Memo
-        {
+        public string Memo {
             get => this["Memo"];
-            set
-            {
+            set {
                 this["Memo"] = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Memo"));
             }
@@ -230,11 +183,9 @@ namespace tSecretCommon.Models
         public IEnumerable<NoteHistRecord> EmailHistory => UniversalData.GetValueOrDefault("Email", true, k => new List<NoteHistRecord>()).OrderByDescending(a => a.DT);
 
         [IgnoreDataMember]
-        public DateTime CreatedDateTime
-        {
+        public DateTime CreatedDateTime {
             get => DbUtil.ToDateTime(this["CreatedDateTime", DateTime.Now.ToString(TimeUtil.FormatYMDHMS)]);
-            set
-            {
+            set {
                 this["CreatedDateTime"] = value.ToString(TimeUtil.FormatYMDHMS);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CreatedDateTime"));
             }

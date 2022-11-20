@@ -21,40 +21,31 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
-namespace tSecretUwp
-{
-    public sealed partial class NoteListPage : Page
-    {
+namespace tSecretUwp {
+    public sealed partial class NoteListPage: Page {
         private AuthAzureAD Auth => ((App)Application.Current).Auth;
         private NotePersister Persister => ((App)Application.Current).Persister;
 
-        public NoteListPage()
-        {
-            this.InitializeComponent();
+        public NoteListPage() {
+            InitializeComponent();
         }
 
-        private bool IsShowAll
-        {
+        private bool IsShowAll {
             get => ShowDeleted.IsChecked ?? false;
             set => ShowDeleted.IsChecked = value;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
+        protected override void OnNavigatedTo(NavigationEventArgs e) {
             log(null);
             Refresh();
-            if (e.NavigationMode == NavigationMode.New)
-            {
+            if (e.NavigationMode == NavigationMode.New) {
                 ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
             }
-            if (e.NavigationMode == NavigationMode.Back)
-            {
-                var prevID = ConfigUtil.Get("PreviousNoteID", "--");
-                var note = lvMain.Items.Select(a => (Note)a).Where(a => a.ID.ToString() == prevID).FirstOrDefault();
-                if (note != default)
-                {
-                    DelayUtil.Start(TimeSpan.FromMilliseconds(100), () =>
-                    {
+            if (e.NavigationMode == NavigationMode.Back) {
+                string prevID = ConfigUtil.Get("PreviousNoteID", "--");
+                Note note = lvMain.Items.Select(a => (Note)a).Where(a => a.ID.ToString() == prevID).FirstOrDefault();
+                if (note != default) {
+                    DelayUtil.Start(TimeSpan.FromMilliseconds(100), () => {
                         lvMain.ScrollIntoView(note);
                         lvMain.SelectedItem = note;
                     });
@@ -62,50 +53,40 @@ namespace tSecretUwp
             }
             base.OnNavigatedTo(e);
         }
-        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
-        {
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e) {
             Logout.IsEnabled = Auth.IsAuthenticated;
 
-            if (e.Parameter is Note note)
-            {
+            if (e.Parameter is Note note) {
                 ConfigUtil.Set("PreviousNoteID", note.ID.ToString());
-            }
-            else
-            {
-                if (e.SourcePageType != typeof(AuthPage))
-                {
+            } else {
+                if (e.SourcePageType != typeof(AuthPage)) {
                     e.Cancel = true;
                 }
             }
             base.OnNavigatingFrom(e);
         }
 
-        private App App => ((App)Application.Current);
+        private App App => (App)Application.Current;
 
-        private void Refresh()
-        {
+        private void Refresh() {
             // Delete empty instance
-            var dels = new List<Note>();
-            foreach (var note in App.Persister)
-            {
+            List<Note> dels = new List<Note>();
+            foreach (Note note in App.Persister) {
                 if (string.IsNullOrEmpty(note.AccountID?.Trim()) &&
                     string.IsNullOrEmpty(note.Caption?.Trim()) &&
-                    string.IsNullOrEmpty(note.Password?.Trim()))
-                {
+                    string.IsNullOrEmpty(note.Password?.Trim())) {
                     dels.Add(note);
                 }
             }
-            foreach (var note in dels)
-            {
+            foreach (Note note in dels) {
                 App.Persister.Remove(note);
             }
 
-            var dat = new ObservableCollection<Note>();
-            foreach (var note in App.Persister
+            ObservableCollection<Note> dat = new ObservableCollection<Note>();
+            foreach (Note note in App.Persister
                                     .Where(rec => IsShowAll || rec.IsDeleted == false)
                                     .OrderBy(rec => $"{rec.CaptionRubi1}--{rec.CaptionRubi}")
-            )
-            {
+            ) {
                 dat.Add(note);
             }
             lvMain.ItemsSource = dat;
@@ -113,15 +94,13 @@ namespace tSecretUwp
             // Make index buttons
             IndexButtons.Children.Clear();
 
-            foreach (var rubi1 in App.Persister
+            foreach (string rubi1 in App.Persister
                                     .Select(a => a.CaptionRubi1)
                                     .Where(a => a != "@")
                                     .Distinct()
-                                    .OrderBy(a => a[0]))
-            {
+                                    .OrderBy(a => a[0])) {
                 Button btn;
-                IndexButtons.Children.Add(btn = new Button
-                {
+                IndexButtons.Children.Add(btn = new Button {
                     Content = rubi1,
                     FontSize = 12,
                     Height = 28,
@@ -133,25 +112,19 @@ namespace tSecretUwp
                     KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Auto,
                 });
                 btn.Click += Index_Click;
-                if (Enum.TryParse<VirtualKey>(rubi1, out var key))
-                {
-                    btn.KeyboardAccelerators.Add(new KeyboardAccelerator
-                    {
+                if (Enum.TryParse<VirtualKey>(rubi1, out VirtualKey key)) {
+                    btn.KeyboardAccelerators.Add(new KeyboardAccelerator {
                         Key = key,
                     });
                 }
             }
         }
 
-        private void Index_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Content is string caption)
-            {
-                for (var i = 0; i < lvMain.Items.Count; i++)
-                {
-                    var item = lvMain.Items[i] as Note;
-                    if (item?.CaptionRubi1 == caption)
-                    {
+        private void Index_Click(object sender, RoutedEventArgs e) {
+            if (sender is Button btn && btn.Content is string caption) {
+                for (int i = 0; i < lvMain.Items.Count; i++) {
+                    Note item = lvMain.Items[i] as Note;
+                    if (item?.CaptionRubi1 == caption) {
                         lvMain.ScrollIntoView(item, ScrollIntoViewAlignment.Leading);
                         return;
                     }
@@ -164,18 +137,14 @@ namespace tSecretUwp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void Button_Sync_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
+        private async void Button_Sync_Click(object sender, RoutedEventArgs e) {
+            try {
                 KurukuruIn();
                 await syncProc();
                 KurukuruOut();
-                await new MessageDialog($"Sync to Cloud", "tSecret").ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                await new MessageDialog($"Cloud sync error\r\n{ex.Message}", "tSecret").ShowAsync();
+                _ = await new MessageDialog($"Downloaded from Cloud", "tSecret").ShowAsync();
+            } catch (Exception ex) {
+                _ = await new MessageDialog($"Cloud sync error\r\n{ex.Message}", "tSecret").ShowAsync();
                 log(null);
                 KurukuruOut();
             }
@@ -185,34 +154,23 @@ namespace tSecretUwp
         /// Data syncronize between Local PC and Cloud storage
         /// </summary>
         /// <returns></returns>
-        private async System.Threading.Tasks.Task syncProc()
-        {
-            log("Cloud sync...");
-            await App.Persister.Sync();
+        private async System.Threading.Tasks.Task syncProc() {
+            log("Download from cloud...");
+            _ = await App.Persister.Sync(false);
             Refresh();
             log(null);
         }
 
-        private void KurukuruIn()
-        {
+        private void KurukuruIn() {
             Kurukuru.Visibility = Visibility.Visible;
         }
 
-        private void KurukuruOut()
-        {
+        private void KurukuruOut() {
             Kurukuru.Visibility = Visibility.Collapsed;
         }
 
-        private void log(string str)
-        {
-            if (str == null)
-            {
-                StatusBar.Text = "tSecret (c)2019-2020 Manabu Tonosaki Allrights reserved.";
-            }
-            else
-            {
-                StatusBar.Text = str;
-            }
+        private void log(string str) {
+            StatusBar.Text = str ?? "tSecret (c)2019-2020 Manabu Tonosaki Allrights reserved.";
         }
 
         /// <summary>
@@ -220,98 +178,72 @@ namespace tSecretUwp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void lvMain_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(NoteEntryPage), lvMain.SelectedItem, new SlideNavigationTransitionInfo
-            {
+        private void lvMain_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+            _ = Frame.Navigate(typeof(NoteEntryPage), lvMain.SelectedItem, new SlideNavigationTransitionInfo {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
         }
 
-        private void ShowDeleted_Click(object sender, RoutedEventArgs e)
-        {
+        private void ShowDeleted_Click(object sender, RoutedEventArgs e) {
             Refresh();
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (Frame.CanGoBack)
-            {
+        private void BackButton_Click(object sender, RoutedEventArgs e) {
+            if (Frame.CanGoBack) {
                 Frame.GoBack();
             }
         }
 
-        private void NewButton_Click(object sender, RoutedEventArgs e)
-        {
-            var note = new Note
-            {
+        private void NewButton_Click(object sender, RoutedEventArgs e) {
+            Note note = new Note {
                 ID = Guid.NewGuid(),
                 CreatedDateTime = DateTime.Now,
             };
             App.Persister.Add(note);
-            Frame.Navigate(typeof(NoteEntryPage), note, new SlideNavigationTransitionInfo
-            {
+            _ = Frame.Navigate(typeof(NoteEntryPage), note, new SlideNavigationTransitionInfo {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
         }
 
-        private async void Logout_Click(object sender, RoutedEventArgs e)
-        {
-            if (Auth.IsAuthenticated)
-            {
+        private async void Logout_Click(object sender, RoutedEventArgs e) {
+            if (Auth.IsAuthenticated) {
                 Logout.IsEnabled = false;
                 Persister.SaveFile();
 
-                await Auth.LogoutAsync(() => new StoryNode { CTS = new CancellationTokenSource(5000), });
+                _ = await Auth.LogoutAsync(() => new StoryNode { CTS = new CancellationTokenSource(5000), });
 
-                if (Auth.IsAuthenticated == false)
-                {
+                if (Auth.IsAuthenticated == false) {
                     ApplicationView.GetForCurrentView().Title = "";
 
-                    if (Frame.CanGoBack)
-                    {
+                    if (Frame.CanGoBack) {
                         Frame.GoBack();
+                    } else {
+                        _ = Frame.Navigate(typeof(AuthPage));
                     }
-                    else
-                    {
-                        Frame.Navigate(typeof(AuthPage));
-                    }
-                }
-                else
-                {
+                } else {
                     Logout.IsEnabled = Auth.IsAuthenticated;
                 }
-            }
-            else
-            {
-                await new MessageDialog($"Your have not logged in yet (LOCAL Mode)", "tSecret").ShowAsync();
+            } else {
+                _ = await new MessageDialog($"Your have not logged in yet (LOCAL Mode)", "tSecret").ShowAsync();
             }
         }
 
-        private void ClearClipBoard_Click(object sender, RoutedEventArgs e)
-        {
+        private void ClearClipBoard_Click(object sender, RoutedEventArgs e) {
             ClipboardUtil.Current.Set("");
             log("The clipboard text has been erased.");
         }
 
-        private void ContextMenu_Copy_Click(object sender, RoutedEventArgs e)
-        {
-            var mi = (MenuFlyoutItem)sender;
-            var val = mi.Tag?.ToString();
-            if (string.IsNullOrEmpty(val) == false)
-            {
+        private void ContextMenu_Copy_Click(object sender, RoutedEventArgs e) {
+            MenuFlyoutItem mi = (MenuFlyoutItem)sender;
+            string val = mi.Tag?.ToString();
+            if (string.IsNullOrEmpty(val) == false) {
                 ClipboardUtil.Current.Set(val);
-                if (mi.Text.Contains("Pass", StringComparison.CurrentCultureIgnoreCase))
-                {
+                if (mi.Text.Contains("Pass", StringComparison.CurrentCultureIgnoreCase)) {
                     log($"{mi.Text} : {StrUtil.Repeat("●", val.Length)}");
-                }
-                else
-                {
+                } else {
                     log($"{mi.Text} : {val}");
                 }
-            }
-            else
-            {
+            } else {
                 log($"Warning : Cancelled to {mi.Text} (no value)");
             }
         }

@@ -10,54 +10,44 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
-namespace tSecretUwp
-{
+namespace tSecretUwp {
     /// <summary>
     /// Note detail editor
     /// </summary>
-    public sealed partial class NoteEntryPage : Page
-    {
+    public sealed partial class NoteEntryPage: Page {
         public Note Note { get; private set; }
 
-        public NoteEntryPage()
-        {
-            this.InitializeComponent();
+        public NoteEntryPage() {
+            InitializeComponent();
         }
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
+        protected override void OnNavigatedTo(NavigationEventArgs e) {
             Note = e.Parameter as Note;
             base.OnNavigatedTo(e);
         }
 
-        private void ClearClipBoard_Click(object sender, RoutedEventArgs e)
-        {
+        private void ClearClipBoard_Click(object sender, RoutedEventArgs e) {
             ClipboardUtil.Current.Set("");
             showCopiedText(ClearClipboard);
         }
 
-        private void CopyAccount_Click(object sender, RoutedEventArgs e)
-        {
+        private void CopyAccount_Click(object sender, RoutedEventArgs e) {
             ClipboardUtil.Current.Set(Note.AccountID);
             showCopiedText(CopiedAccount);
         }
 
-        private void CopyPassword_Click(object sender, RoutedEventArgs e)
-        {
+        private void CopyPassword_Click(object sender, RoutedEventArgs e) {
             ClipboardUtil.Current.Set(Note.Password);
             showCopiedText(CopiedPassword);
         }
 
-        private void CopyEmail_Click(object sender, RoutedEventArgs e)
-        {
+        private void CopyEmail_Click(object sender, RoutedEventArgs e) {
             ClipboardUtil.Current.Set(Note.Email);
             showCopiedText(CopiedEmail);
         }
 
-        private void showCopiedText(TextBlock tar)
-        {
-            var ls = new[] { CopiedAccount, CopiedPassword, CopiedEmail, ClearClipboard };   // Enum labeled "Copied password"
-            foreach (var l in ls.Where(a => ReferenceEquals(a, tar) == false))
-            {
+        private void showCopiedText(TextBlock tar) {
+            TextBlock[] ls = new[] { CopiedAccount, CopiedPassword, CopiedEmail, ClearClipboard };   // Enum labeled "Copied password"
+            foreach (TextBlock l in ls.Where(a => ReferenceEquals(a, tar) == false)) {
                 l.Visibility = Visibility.Collapsed;
             }
             tar.Visibility = Visibility.Visible;
@@ -65,39 +55,29 @@ namespace tSecretUwp
         }
 
 
-        private void ShowPassword_Click(object sender, RoutedEventArgs e)
-        {
-            if (PasswordShow.Visibility == Visibility.Collapsed)
-            {
+        private void ShowPassword_Click(object sender, RoutedEventArgs e) {
+            if (PasswordShow.Visibility == Visibility.Collapsed) {
                 PasswordHide.Visibility = Visibility.Collapsed;
                 PasswordShow.Visibility = Visibility.Visible;
                 PasswordVisibleMode.Glyph = "\xe1f7";
-            }
-            else
-            {
+            } else {
                 PasswordShow.Visibility = Visibility.Collapsed;
                 PasswordHide.Visibility = Visibility.Visible;
                 PasswordVisibleMode.Glyph = "\xe1f6";
             }
         }
 
-        private void History_Click(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(NoteHistoryPage), Note, new SlideNavigationTransitionInfo
-            {
+        private void History_Click(object sender, RoutedEventArgs e) {
+            _ = Frame.Navigate(typeof(NoteHistoryPage), Note, new SlideNavigationTransitionInfo {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (Frame.CanGoBack)
-            {
+        private void BackButton_Click(object sender, RoutedEventArgs e) {
+            if (Frame.CanGoBack) {
                 Frame.GoBack();
-            }
-            else
-            {
-                Frame.Navigate(typeof(NoteListPage));
+            } else {
+                _ = Frame.Navigate(typeof(NoteListPage));
             }
         }
     }

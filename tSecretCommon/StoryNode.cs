@@ -5,10 +5,8 @@ using System;
 using System.IO;
 using System.Threading;
 
-namespace tSecretCommon
-{
-    public class StoryNode
-    {
+namespace tSecretCommon {
+    public class StoryNode {
         public StreamWriter MessageBuffer { get; set; }
         public CancellationTokenSource CTS { get; set; }
         public Action<StoryNode> CutAction { get; set; }
@@ -17,8 +15,7 @@ namespace tSecretCommon
         public StoryNode Error { get; set; }
         public bool? TaskResult { get; set; } = null;
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"{CutActionName ?? base.ToString()}";
         }
     }

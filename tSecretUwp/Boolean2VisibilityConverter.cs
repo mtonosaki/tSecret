@@ -6,25 +6,14 @@ using Tono;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
-namespace tSecretUwp
-{
-    public class Boolean2VisibilityConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string language)
-        {
+namespace tSecretUwp {
+    public class Boolean2VisibilityConverter: IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, string language) {
             return DbUtil.ToBoolean(value, true) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            if (value is Visibility vis)
-            {
-                return vis == Visibility.Visible;
-            }
-            else
-            {
-                return Visibility.Visible;
-            }
+        public object ConvertBack(object value, Type targetType, object parameter, string language) {
+            return value is Visibility vis ? vis == Visibility.Visible : (object)Visibility.Visible;
         }
     }
 }
