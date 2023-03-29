@@ -14,7 +14,7 @@ namespace tSecretCommon
 
         public void SaveFile()
         {
-            var json = JsonConvert.SerializeObject((PersistSetting)this);
+            var json = JsonConvert.SerializeObject(this);
             using (var sw = new StreamWriter(SettingFilePath, false, Encoding.UTF8))
             {
                 sw.Write(json);

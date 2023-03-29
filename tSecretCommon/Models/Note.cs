@@ -37,14 +37,7 @@ namespace tSecretCommon.Models
         }
         public override bool Equals(object obj)
         {
-            if (obj is Note tar)
-            {
-                return tar.ID.Equals(ID);
-            }
-            else
-            {
-                return false;
-            }
+            return obj is Note tar && tar.ID.Equals(ID);
         }
         public override int GetHashCode()
         {
@@ -85,14 +78,7 @@ namespace tSecretCommon.Models
             get
             {
                 var list = UniversalData.GetValueOrDefault(key, true, k => new List<NoteHistRecord>());
-                if (list.Count > 0)
-                {
-                    return list[list.Count - 1].Value;
-                }
-                else
-                {
-                    return def;
-                }
+                return list.Count > 0 ? list[list.Count - 1].Value : def;
             }
             set
             {

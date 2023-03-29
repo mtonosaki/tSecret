@@ -32,9 +32,8 @@ namespace tSecretUwp
         {
             Setting.LoadFile();
 
-            Frame rootFrame = Window.Current.Content as Frame;
 
-            if (rootFrame == null)
+            if (!(Window.Current.Content is Frame rootFrame))
             {
                 rootFrame = new Frame();
 
@@ -46,7 +45,7 @@ namespace tSecretUwp
             {
                 if (rootFrame.Content == null)
                 {
-                    rootFrame.Navigate(typeof(AuthPage), e.Arguments);
+                    _ = rootFrame.Navigate(typeof(AuthPage), e.Arguments);
                 }
                 Window.Current.Activate();
             }

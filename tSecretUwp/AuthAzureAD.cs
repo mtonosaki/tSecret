@@ -18,7 +18,7 @@ namespace tSecretUwp
         public bool IsAuthenticated { get; set; }
         public string DisplayName { get; set; }
 
-        private readonly static System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient();
+        private static readonly System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient();
         private readonly string[] scopes = new[] { "user.read" };
         private readonly MySecretParameter param = new MySecretParameter();
         private IPublicClientApplication clientApp = null;
@@ -149,10 +149,7 @@ namespace tSecretUwp
 
         public string TenantID => authResult?.TenantId;
 
-        public string UserObjectID
-        {
-            get => authResult?.UniqueId;
-        }
+        public string UserObjectID => authResult?.UniqueId;
 
         /// <summary>
         /// Perform an HTTP GET request to a URL using an HTTP Authorization header

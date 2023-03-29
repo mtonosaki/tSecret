@@ -29,7 +29,7 @@ namespace tSecretCommon.Models
 
         public void Remove(Note item)
         {
-            Notes.Remove(item);
+            _ = Notes.Remove(item);
         }
 
         public Note Get(Note tar)

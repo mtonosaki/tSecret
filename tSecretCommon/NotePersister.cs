@@ -1,8 +1,8 @@
 ﻿// (c) 2019 Manabu Tonosaki
 // Licensed under the MIT license.
 
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Tono;
 using tSecretCommon.Models;
@@ -30,11 +31,10 @@ namespace tSecretCommon
         // Data
         private NoteList dat = null;
 
-        private CloudBlobContainer GetContainer(string containerName)
+        private BlobContainerClient GetContainer(string containerName)
         {
-            var account = CloudStorageAccount.Parse(SecretParam.AzureStorageConnectionString);
-            var client = account.CreateCloudBlobClient();
-            return client.GetContainerReference(containerName.ToLower());
+            var container = new BlobContainerClient(SecretParam.AzureStorageConnectionString, containerName.ToLower());
+            return container;
         }
 
         /// <summary>
@@ -47,13 +47,14 @@ namespace tSecretCommon
                 return;
             }
             Debug.Write($"{BlobName} is uploading...");
-            string json = JsonConvert.SerializeObject(dat);
-            string sec = RijndaelEncode(json);
+            var json = JsonConvert.SerializeObject(dat);
+            var sec = RijndaelEncode(json);
 
             var container = GetContainer("tsecret");
             await container.CreateIfNotExistsAsync();
-            var blob = container.GetBlockBlobReference(BlobName);
-            await blob.UploadFromStreamAsync(new MemoryStream(Encoding.UTF8.GetBytes(sec)));
+            var blob = container.GetBlobClient(BlobName);
+            var data = Encoding.UTF8.GetBytes(sec);
+            await blob.UploadAsync(new MemoryStream(data), true);
             Debug.Write($"{DateTime.Now.ToString(TimeUtil.FormatYMDHMS)} {BlobName} have been uploaded succesfully.");
         }
 
@@ -71,41 +72,41 @@ namespace tSecretCommon
                 return dat;
             }
 
-            foreach (var lnote in dat.Notes)
+            foreach (var noteLocal in dat.Notes)
             {
-                if (cloud.Contains(lnote))
+                if (cloud.Contains(noteLocal))
                 {
-                    var cnote = cloud.Get(lnote);
-                    foreach (var ckey in cnote.UniversalData.Keys)
+                    var noteCloud = cloud.Get(noteLocal);
+                    foreach (var keyCloud in noteCloud.UniversalData.Keys)
                     {
-                        var clist = cnote.UniversalData[ckey];
-                        var llist = lnote.UniversalData.GetValueOrDefault(ckey, true, k => new List<NoteHistRecord>());
-                        foreach (var ch in clist)
+                        var historyListCloud = noteCloud.UniversalData[keyCloud];
+                        var historyListLocal = noteLocal.UniversalData.GetValueOrDefault(keyCloud, true, k => new List<NoteHistRecord>());
+                        foreach (var historyCloud in historyListCloud)
                         {
-                            var lh = llist.Find(a => Math.Abs((a.DT - ch.DT).TotalSeconds) < 1);
-                            if (lh == null)
+                            var historyLocal = historyListLocal.Find(a => Math.Abs((a.DT - historyCloud.DT).TotalSeconds) < 1);
+                            if (historyLocal == null)
                             {
-                                llist.Add(ch);  // Add cloud only data to local storage
+                                historyListLocal.Add(historyCloud);  // Add cloud only data to local storage
                             }
                             else
                             {
-                                if (lh.Value.Equals(ch.Value) == false)
+                                if (historyLocal.Value.Equals(historyCloud.Value) == false)
                                 {
-                                    llist.Add(ch);  // Fail safe 同じ時間なのに値が違うレコードはローカルに追加
+                                    historyListLocal.Add(historyCloud);  // Fail safe 同じ時間なのに値が違うレコードはローカルに追加
                                 }
                             }
                         }
-                        llist.Sort((a, b) => a.DT.CompareTo(b.DT));
+                        historyListLocal.Sort((a, b) => a.DT.CompareTo(b.DT));
                     }
                 }
             }
 
             // save cloud only data
-            foreach (var cnote in cloud.Notes)
+            foreach (var noteCloud in cloud.Notes)
             {
-                if (dat.Contains(cnote) == false)
+                if (dat.Contains(noteCloud) == false)
                 {
-                    dat.Add(cnote);
+                    dat.Add(noteCloud);
                 }
             }
 
@@ -122,12 +123,15 @@ namespace tSecretCommon
         public async Task<NoteList> Download()
         {
             Debug.Write($"{BlobName} is downloading...");
-            CloudBlobContainer container = GetContainer("tsecret");
+            var container = GetContainer("tsecret");
+            var blob = container.GetBlobClient(BlobName);
             await container.CreateIfNotExistsAsync();
-            CloudBlockBlob blob = container.GetBlockBlobReference(BlobName);
-            string sec = await blob.DownloadTextAsync();
-            string json = RijndaelDecode(sec);
-            NoteList ret = JsonConvert.DeserializeObject<NoteList>(json);
+            var stream = new MemoryStream();
+            blob.DownloadTo(stream);
+            stream.Flush();
+            var sec = Encoding.UTF8.GetString(stream.ToArray());
+            var json = RijndaelDecode(sec);
+            var ret = JsonConvert.DeserializeObject<NoteList>(json);
             Debug.Write($"{DateTime.Now.ToString(TimeUtil.FormatYMDHMS)} MainData.dat have been downloaded succesfully.");
 
             return ret;
@@ -142,7 +146,7 @@ namespace tSecretCommon
             var offset = 0;
             for (var i = Math.Max(nB, nF) - 1; i >= 0; i--)
             {
-                ret[i % nB] = SecretParam.TEXTSET64[(SecretParam.TEXTSET64.IndexOf(ret[i % nB]) + (int)filter[i % nF] + nums[(i + offset) % nums.Length]) % SecretParam.TEXTSET64.Length];
+                ret[i % nB] = SecretParam.TEXTSET64[(SecretParam.TEXTSET64.IndexOf(ret[i % nB]) + filter[i % nF] + nums[(i + offset) % nums.Length]) % SecretParam.TEXTSET64.Length];
                 offset++;
             }
             return ret.ToString();
@@ -156,10 +160,10 @@ namespace tSecretCommon
         private string RijndaelEncode(string planeText)
         {
             var iv = new StringBuilder();
-            int ivN = 0;
-            for (int ivi = 0; ivi < ivN + SecretParam.IVNPP; ivi++)
+            var ivN = 0;
+            for (var ivi = 0; ivi < ivN + SecretParam.IVNPP; ivi++)
             {
-                iv.Append(SecretParam.TEXTSET64[rnd.Next(SecretParam.TEXTSET64.Length - 1)]);
+                _ = iv.Append(SecretParam.TEXTSET64[rnd.Next(SecretParam.TEXTSET64.Length - 1)]);
             }
             using (var ri = new RijndaelManaged
             {
@@ -184,7 +188,7 @@ namespace tSecretCommon
                         buf = ms.ToArray();
                     }
                 }
-                return ($"{SecretParam.TEXTSET64[ivN]}{iv}{Convert.ToBase64String(buf)}");
+                return $"{SecretParam.TEXTSET64[ivN]}{iv}{Convert.ToBase64String(buf)}";
             }
         }
 
@@ -195,9 +199,9 @@ namespace tSecretCommon
         /// <returns></returns>
         private string RijndaelDecode(string secText)
         {
-            int ivN = SecretParam.TEXTSET64.IndexOf(secText[0]);
-            string iv = secText.Substring(1, ivN + SecretParam.IVNPP);
-            string sec = secText.Substring(ivN + iv.Length + 1);
+            var ivN = SecretParam.TEXTSET64.IndexOf(secText[0]);
+            var iv = secText.Substring(1, ivN + SecretParam.IVNPP);
+            var sec = secText.Substring(ivN + iv.Length + 1);
 
             using (var rijndael = new RijndaelManaged
             {

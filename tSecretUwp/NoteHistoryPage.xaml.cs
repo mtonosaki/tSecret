@@ -23,7 +23,7 @@ namespace tSecretUwp
 
         public NoteHistoryPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

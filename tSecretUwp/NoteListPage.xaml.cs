@@ -30,7 +30,7 @@ namespace tSecretUwp
 
         public NoteListPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         private bool IsShowAll
@@ -80,7 +80,7 @@ namespace tSecretUwp
             base.OnNavigatingFrom(e);
         }
 
-        private App App => ((App)Application.Current);
+        private App App => (App)Application.Current;
 
         private void Refresh()
         {
@@ -171,11 +171,11 @@ namespace tSecretUwp
                 KurukuruIn();
                 await syncProc();
                 KurukuruOut();
-                await new MessageDialog($"Sync to Cloud", "tSecret").ShowAsync();
+                _ = await new MessageDialog($"Sync to Cloud", "tSecret").ShowAsync();
             }
             catch (Exception ex)
             {
-                await new MessageDialog($"Cloud sync error\r\n{ex.Message}", "tSecret").ShowAsync();
+                _ = await new MessageDialog($"Cloud sync error\r\n{ex.Message}", "tSecret").ShowAsync();
                 log(null);
                 KurukuruOut();
             }
@@ -188,7 +188,7 @@ namespace tSecretUwp
         private async System.Threading.Tasks.Task syncProc()
         {
             log("Cloud sync...");
-            await App.Persister.Sync();
+            _ = await App.Persister.Sync();
             Refresh();
             log(null);
         }
@@ -205,14 +205,7 @@ namespace tSecretUwp
 
         private void log(string str)
         {
-            if (str == null)
-            {
-                StatusBar.Text = "tSecret (c)2019-2020 Manabu Tonosaki Allrights reserved.";
-            }
-            else
-            {
-                StatusBar.Text = str;
-            }
+            StatusBar.Text = str ?? "tSecret (c)2019-2023 Manabu Tonosaki Allrights reserved.";
         }
 
         /// <summary>
@@ -222,7 +215,7 @@ namespace tSecretUwp
         /// <param name="e"></param>
         private void lvMain_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            Frame.Navigate(typeof(NoteEntryPage), lvMain.SelectedItem, new SlideNavigationTransitionInfo
+            _ = Frame.Navigate(typeof(NoteEntryPage), lvMain.SelectedItem, new SlideNavigationTransitionInfo
             {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
@@ -249,7 +242,7 @@ namespace tSecretUwp
                 CreatedDateTime = DateTime.Now,
             };
             App.Persister.Add(note);
-            Frame.Navigate(typeof(NoteEntryPage), note, new SlideNavigationTransitionInfo
+            _ = Frame.Navigate(typeof(NoteEntryPage), note, new SlideNavigationTransitionInfo
             {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
@@ -262,7 +255,7 @@ namespace tSecretUwp
                 Logout.IsEnabled = false;
                 Persister.SaveFile();
 
-                await Auth.LogoutAsync(() => new StoryNode { CTS = new CancellationTokenSource(5000), });
+                _ = await Auth.LogoutAsync(() => new StoryNode { CTS = new CancellationTokenSource(5000), });
 
                 if (Auth.IsAuthenticated == false)
                 {
@@ -274,7 +267,7 @@ namespace tSecretUwp
                     }
                     else
                     {
-                        Frame.Navigate(typeof(AuthPage));
+                        _ = Frame.Navigate(typeof(AuthPage));
                     }
                 }
                 else
@@ -284,7 +277,7 @@ namespace tSecretUwp
             }
             else
             {
-                await new MessageDialog($"Your have not logged in yet (LOCAL Mode)", "tSecret").ShowAsync();
+                _ = await new MessageDialog($"Your have not logged in yet (LOCAL Mode)", "tSecret").ShowAsync();
             }
         }
 

@@ -25,12 +25,12 @@ namespace tSecretUwp
         private NotePersister Persister => ((App)Application.Current).Persister;
         private AuthAzureAD AzureAD => ((App)Application.Current).Auth;
         private SettingPersister Setting => ((App)Application.Current).Setting;
-        private StoryNode StoryOnlineRoot;
-        private StoryNode StoryLocalRoot;
+        private readonly StoryNode StoryOnlineRoot;
+        private readonly StoryNode StoryLocalRoot;
 
         public AuthPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             Setting.LoadFile();
             LocalModeButton.IsEnabled = !string.IsNullOrEmpty(Setting.LastUserObjectID);
@@ -123,7 +123,7 @@ namespace tSecretUwp
         private void LoginSilent(StoryNode cut)
         {
             var task = AzureAD.LoginSilentAsync(() => cut);
-            task.ContinueWith(delegate
+            _ = task.ContinueWith(delegate
             {
                 cut.TaskResult = task.Result;
             });
@@ -134,7 +134,7 @@ namespace tSecretUwp
             var backgroundScheduler = TaskScheduler.Default;
             var uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             var task = AzureAD.LoginInteractiveAsync(() => cut);
-            task.ContinueWith(delegate
+            _ = task.ContinueWith(delegate
             {
                 if (string.IsNullOrEmpty(AzureAD.UserObjectID))
                 {
@@ -205,21 +205,14 @@ namespace tSecretUwp
         {
             Setting.LoadFile();
 
-            if (string.IsNullOrEmpty(Setting.LastDisplayName) == false)
-            {
-                ApplicationView.GetForCurrentView().Title = $"[LOCAL] {(Setting.LastDisplayName ?? "")}";
-            }
-            else
-            {
-                ApplicationView.GetForCurrentView().Title = $"[LOCAL]";
-            }
+            ApplicationView.GetForCurrentView().Title = string.IsNullOrEmpty(Setting.LastDisplayName) == false ? $"[LOCAL] {Setting.LastDisplayName ?? ""}" : $"[LOCAL]";
             cut.TaskResult = true;
         }
 
         private void LoadPrivacy(StoryNode cut)
         {
             var task = AzureAD.GetPrivacyDataAsync(() => cut);
-            task.ContinueWith(delegate
+            _ = task.ContinueWith(delegate
             {
                 if (task.Result)
                 {
@@ -232,15 +225,7 @@ namespace tSecretUwp
                 }
                 else
                 {
-                    var title = "";
-                    if (string.IsNullOrEmpty(Setting.LastDisplayName) == false)
-                    {
-                        title = $"[OFFLINE?] {(Setting.LastDisplayName ?? "")}";
-                    }
-                    else
-                    {
-                        title = $"[OFFLINE?]";
-                    }
+                    var title = string.IsNullOrEmpty(Setting.LastDisplayName) == false ? $"[OFFLINE?] {Setting.LastDisplayName ?? ""}" : $"[OFFLINE?]";
                     _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                    {
                        ApplicationView.GetForCurrentView().Title = title;
@@ -269,7 +254,7 @@ namespace tSecretUwp
         private void NextPage(StoryNode cut)
         {
             ConfigUtil.Set("LoginUtc", DateTime.UtcNow.ToString());
-            Frame.Navigate(typeof(NoteListPage), null, new SlideNavigationTransitionInfo
+            _ = Frame.Navigate(typeof(NoteListPage), null, new SlideNavigationTransitionInfo
             {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
@@ -279,7 +264,7 @@ namespace tSecretUwp
         private void DeviceAuthentication(StoryNode cut)
         {
             var t1 = UserConsentVerifier.CheckAvailabilityAsync().AsTask();
-            t1.ContinueWith(delegate
+            _ = t1.ContinueWith(delegate
             {
                 var available = t1.Result;
                 if (available == UserConsentVerifierAvailability.Available)
@@ -287,7 +272,7 @@ namespace tSecretUwp
                     _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
                         var t2 = UserConsentVerifier.RequestVerificationAsync("tSecret").AsTask();
-                        t2.ContinueWith(delegate
+                        _ = t2.ContinueWith(delegate
                         {
                             if (t2.Result == UserConsentVerificationResult.Verified)
                             {
@@ -321,7 +306,7 @@ namespace tSecretUwp
         private string GetMessage(StoryNode cut)
         {
             cut.MessageBuffer.Flush();
-            cut.MessageBuffer.BaseStream.Seek(0, SeekOrigin.Begin);
+            _ = cut.MessageBuffer.BaseStream.Seek(0, SeekOrigin.Begin);
             var sr = new StreamReader(cut.MessageBuffer.BaseStream, Encoding.UTF8);
             var ret = sr.ReadToEnd();
             cut.MessageBuffer.BaseStream.SetLength(0);
@@ -345,8 +330,10 @@ namespace tSecretUwp
             cut.CTS = cts;
             var status = Statues.WaitingExec;
 
-            var porlingTimer = new DispatcherTimer();
-            porlingTimer.Interval = TimeSpan.FromMilliseconds(20);
+            var porlingTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(20)
+            };
             porlingTimer.Tick += (s, e) =>
             {
                 porlingTimer.Stop();
@@ -408,10 +395,7 @@ namespace tSecretUwp
 
         private void LocalModeButton_Click(object sender, RoutedEventArgs e) // giveup thread pool control
         {
-            if (_currentCTS != null)
-            {
-                _currentCTS.Cancel();
-            }
+            _currentCTS?.Cancel();
 
             StartButton.IsEnabled = false;
             LocalModeButton.IsEnabled = false;

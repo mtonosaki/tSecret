@@ -21,7 +21,7 @@ namespace tSecretUwp
 
         public NoteEntryPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -83,7 +83,7 @@ namespace tSecretUwp
 
         private void History_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(NoteHistoryPage), Note, new SlideNavigationTransitionInfo
+            _ = Frame.Navigate(typeof(NoteHistoryPage), Note, new SlideNavigationTransitionInfo
             {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
@@ -97,7 +97,7 @@ namespace tSecretUwp
             }
             else
             {
-                Frame.Navigate(typeof(NoteListPage));
+                _ = Frame.Navigate(typeof(NoteListPage));
             }
         }
     }

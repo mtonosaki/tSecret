@@ -17,14 +17,7 @@ namespace tSecretUwp
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            if (value is Visibility vis)
-            {
-                return vis == Visibility.Visible;
-            }
-            else
-            {
-                return Visibility.Visible;
-            }
+            return value is Visibility vis ? vis == Visibility.Visible : (object)Visibility.Visible;
         }
     }
 }
