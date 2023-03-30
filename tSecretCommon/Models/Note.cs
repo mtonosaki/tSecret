@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using Tono;
 
 namespace tSecretCommon.Models
@@ -26,6 +27,65 @@ namespace tSecretCommon.Models
         /// Persist data format (considering no migration even if format change)
         /// </summary>
         public Dictionary<string/*key*/, List<NoteHistRecord>> UniversalData = new Dictionary<string, List<NoteHistRecord>>();
+
+        public string MakeObjectString()
+        {
+            var ret = new StringBuilder();
+            _ = ret.Append($"%NOTE%-{ID}");
+            _ = ret.Append('\n');
+            _ = ret.Append($"{UniversalData.Count}");
+            _ = ret.Append('\n');
+            foreach (var kv in UniversalData)
+            {
+                _ = ret.Append($"{kv.Key}={kv.Value.Count}");
+                _ = ret.Append('\n');
+                foreach (var hist in kv.Value)
+                {
+                    _ = ret.Append(hist.MakeObjectString());
+                    _ = ret.Append('\n');
+                }
+            }
+            return ret.ToString();
+        }
+
+        public static Note MakeObject(string[] lines, ref int step)
+        {
+            var ret = new Note();
+            var line = lines[++step];
+
+            if (!line.StartsWith("%NOTE%-"))
+            {
+                throw new FormatException("Unexpected note id prefix");
+            }
+
+            var idstr = line.Substring(7);
+            ret.ID = Guid.Parse(idstr);
+
+            line = lines[++step];
+            var universalDataCont = int.Parse(line);
+            if (universalDataCont < 0 || universalDataCont > 9999)
+            {
+                throw new FormatException("Universal count error");
+            }
+
+            ret.UniversalData.Clear();
+            foreach (var iUc in Enumerable.Range(0, universalDataCont))
+            {
+                line = lines[++step];
+                var kn = line.Split('=');
+                var key = kn[0];
+                var historyCount = int.Parse(kn[1]);
+                List<NoteHistRecord> history;
+                ret.UniversalData[key] = history = new List<NoteHistRecord>();
+                foreach (var iHc in Enumerable.Range(0, historyCount))
+                {
+                    var noteHistoryRecord = NoteHistRecord.MakeObject(lines, ref step);
+                    history.Add(noteHistoryRecord);
+                }
+            }
+
+            return ret;
+        }
 
         //=== NOTE: belows are NOT seriarized. Set [IgnoreDataMember] attribute ==============
         public event PropertyChangedEventHandler PropertyChanged;
@@ -184,6 +244,28 @@ namespace tSecretCommon.Models
             {
                 this["Email"] = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Email"));
+            }
+        }
+
+        [IgnoreDataMember]
+        public bool IsHome
+        {
+            get => DbUtil.ToBoolean(this["isFilterHome"]);
+            set
+            {
+                this["isFilterHome"] = value.ToString();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("isFilterHome"));
+            }
+        }
+
+        [IgnoreDataMember]
+        public bool IsWork
+        {
+            get => DbUtil.ToBoolean(this["isFilterWork"]);
+            set
+            {
+                this["isFilterWork"] = value.ToString();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("isFilterWork"));
             }
         }
 

@@ -29,10 +29,12 @@
             <CommandBar.Content>
                 <Button Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalAlignment="Top" Click="BackButton_Click"/>
             </CommandBar.Content>
-            <AppBarToggleButton x:Name="Logout" Icon="ClosePane" Label="Logout" Click="Logout_Click" />
+            <AppBarToggleButton x:Name="Logout" Icon="ClosePane" Label="" Click="Logout_Click" />
             <AppBarSeparator />
-            <AppBarToggleButton x:Name="ShowDeleted" Icon="ShowResults" Label="Deleted" Style="{StaticResource AppBarToggleButtonRevealStyle}" Click="ShowDeleted_Click" />
-            <AppBarButton Icon="Sync" Label="Sync" Click="Button_Sync_Click"/>
+            <AppBarToggleButton x:Name="ShowHome" Icon="Home" Label="" Style="{StaticResource AppBarToggleButtonRevealStyle}" IsChecked="True"  Click="ShowHome_Click" />
+            <AppBarToggleButton x:Name="ShowWork" Icon="GoToStart" Label="" Style="{StaticResource AppBarToggleButtonRevealStyle}" IsChecked="True" Click="ShowWork_Click" />
+            <AppBarToggleButton x:Name="ShowDeleted" Icon="Delete" Label="" Style="{StaticResource AppBarToggleButtonRevealStyle}" IsChecked="False" Click="ShowDeleted_Click" />
+            <AppBarButton Icon="Sync" Label="" Click="Button_Sync_Click"/>
             <AppBarButton Icon="Cancel" Click="ClearClipBoard_Click"/>
             <AppBarButton Icon="Add" Label="New" KeyboardAcceleratorPlacementMode="Auto" Click="NewButton_Click">
                 <AppBarButton.KeyboardAccelerators>

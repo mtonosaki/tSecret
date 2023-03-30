@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,7 +9,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Tono;
 using tSecretCommon.Models;
@@ -20,11 +17,10 @@ namespace tSecretCommon
 {
     public class NotePersister : IEnumerable<Note>
     {
-        private const string VERSION = "3.00";
+        private const string VERSION = "4.00";
         private static readonly Random rnd = new Random(DateTime.Now.Ticks.GetHashCode());
         private readonly MySecretParameter SecretParam = new MySecretParameter();
         private string DataFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{(string.IsNullOrEmpty(UserObjectID) ? "null" : UserObjectID)}.dat");
-        private string SettingFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), $"tSecret.localcache.{VERSION}.{(string.IsNullOrEmpty(UserObjectID) ? "null" : UserObjectID)}.dat");
         private string BlobName => $"MainData.{(string.IsNullOrEmpty(UserObjectID) ? "null" : UserObjectID)}.dat";
         private string UserObjectID = "";
 
@@ -47,14 +43,13 @@ namespace tSecretCommon
                 return;
             }
             Debug.Write($"{BlobName} is uploading...");
-            var json = JsonConvert.SerializeObject(dat);
-            var sec = RijndaelEncode(json);
-
+            var planeCode = dat.MakeInstanceCode();
+            var secureCode = RijndaelEncode(planeCode);
             var container = GetContainer("tsecret");
-            await container.CreateIfNotExistsAsync();
+            _ = await container.CreateIfNotExistsAsync();
             var blob = container.GetBlobClient(BlobName);
-            var data = Encoding.UTF8.GetBytes(sec);
-            await blob.UploadAsync(new MemoryStream(data), true);
+            var secureData = Encoding.UTF8.GetBytes(secureCode);
+            _ = await blob.UploadAsync(new MemoryStream(secureData), true);
             Debug.Write($"{DateTime.Now.ToString(TimeUtil.FormatYMDHMS)} {BlobName} have been uploaded succesfully.");
         }
 
@@ -125,13 +120,13 @@ namespace tSecretCommon
             Debug.Write($"{BlobName} is downloading...");
             var container = GetContainer("tsecret");
             var blob = container.GetBlobClient(BlobName);
-            await container.CreateIfNotExistsAsync();
+            _ = await container.CreateIfNotExistsAsync();
             var stream = new MemoryStream();
-            blob.DownloadTo(stream);
+            _ = blob.DownloadTo(stream);
             stream.Flush();
-            var sec = Encoding.UTF8.GetString(stream.ToArray());
-            var json = RijndaelDecode(sec);
-            var ret = JsonConvert.DeserializeObject<NoteList>(json);
+            var secureText = Encoding.ASCII.GetString(stream.ToArray());
+            var planeCode = RijndaelDecode(secureText);
+            var ret = NoteList.MakeObjectFrom(planeCode); // JsonConvert.DeserializeObject<NoteList>(planeCode);
             Debug.Write($"{DateTime.Now.ToString(TimeUtil.FormatYMDHMS)} MainData.dat have been downloaded succesfully.");
 
             return ret;
@@ -258,8 +253,8 @@ namespace tSecretCommon
                         using (var sr = new StreamReader(fs, Encoding.UTF8))
                         {
                             var sec = sr.ReadToEnd();
-                            var json = RijndaelDecode(sec);
-                            dat = JsonConvert.DeserializeObject<NoteList>(json);
+                            var planeText = RijndaelDecode(sec);
+                            dat = NoteList.MakeObjectFrom(planeText, VERSION);
                         }
                     }
                 }
@@ -286,11 +281,11 @@ namespace tSecretCommon
             {
                 return;
             }
-            var json = JsonConvert.SerializeObject(dat);
-            var sec = RijndaelEncode(json);
+            var planeCode = dat.MakeInstanceCode();
+            var secureText = RijndaelEncode(planeCode);
             using (var sw = new StreamWriter(DataFilePath, false, Encoding.UTF8))
             {
-                sw.Write(sec);
+                sw.Write(secureText);
                 sw.Close();
             }
         }

@@ -33,9 +33,21 @@ namespace tSecretUwp
             InitializeComponent();
         }
 
-        private bool IsShowAll
+        private bool IsShowHome
         {
-            get => ShowDeleted.IsChecked ?? false;
+            get => ShowHome.IsChecked ?? true;
+            set => ShowHome.IsChecked = value;
+        }
+
+        private bool IsShowWork
+        {
+            get => ShowWork.IsChecked ?? true;
+            set => ShowWork.IsChecked = value;
+        }
+
+        private bool IsShowDelete
+        {
+            get => ShowDeleted.IsChecked ?? true;
             set => ShowDeleted.IsChecked = value;
         }
 
@@ -82,6 +94,12 @@ namespace tSecretUwp
 
         private App App => (App)Application.Current;
 
+        private bool IsShow(Note rec)
+        {
+            return (!rec.IsDeleted || IsShowDelete)
+&& (!rec.IsHome && !rec.IsWork && !IsShowHome && !IsShowWork || rec.IsHome && IsShowHome || rec.IsWork && IsShowWork);
+        }
+
         private void Refresh()
         {
             // Delete empty instance
@@ -102,7 +120,7 @@ namespace tSecretUwp
 
             var dat = new ObservableCollection<Note>();
             foreach (var note in App.Persister
-                                    .Where(rec => IsShowAll || rec.IsDeleted == false)
+                                    .Where(rec => IsShow(rec))
                                     .OrderBy(rec => $"{rec.CaptionRubi1}--{rec.CaptionRubi}")
             )
             {
@@ -219,6 +237,16 @@ namespace tSecretUwp
             {
                 Effect = SlideNavigationTransitionEffect.FromRight,
             });
+        }
+
+        private void ShowHome_Click(object sender, RoutedEventArgs e)
+        {
+            Refresh();
+        }
+
+        private void ShowWork_Click(object sender, RoutedEventArgs e)
+        {
+            Refresh();
         }
 
         private void ShowDeleted_Click(object sender, RoutedEventArgs e)
