@@ -107,7 +107,6 @@ namespace tSecretCommon.Models
                     ret.Notes.Add(note);
                 }
 
-
                 return ret;
             }
             catch (Exception ex)

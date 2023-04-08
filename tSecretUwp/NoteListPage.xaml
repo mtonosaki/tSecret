@@ -7,13 +7,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Loaded="Page_Loaded"
+>
     <Page.Resources>
         <local:Boolean2VisibilityConverter x:Key="B2V" />
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="{ThemeResource AppBarExpandButtonThemeWidthGridLength}" />
+            <RowDefinition Height="42" />
             <RowDefinition Height="*" />
             <RowDefinition Height="24" />
         </Grid.RowDefinitions>
@@ -42,10 +45,16 @@
                 </AppBarButton.KeyboardAccelerators>
             </AppBarButton>
         </CommandBar>
-
+        <TextBox x:Name="textFind"
+            Grid.Row="1"
+            Grid.ColumnSpan="1"
+            PlaceholderText="Search keyword"
+            Margin="8,1,0,8"
+            TextChanged="textFind_TextChanged"
+        />
         <ListView
             x:Name="lvMain"
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.ColumnSpan="1"
             CanReorderItems="True"
             AllowDrop="True"
@@ -97,7 +106,7 @@
         </ListView>
         <StackPanel
             x:Name="IndexButtons"
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.Column="1"
             VerticalAlignment="Center">
             <Button Content="A" Height="32" FontSize="12" HorizontalAlignment="Center" Margin="-6,-8,-6,-8" Foreground="Magenta" Background="Transparent" />
@@ -107,13 +116,14 @@
         </StackPanel>
         <TextBlock
             x:Name="StatusBar"
+            Grid.Row="3"
             Grid.ColumnSpan="2"
             Text="Starting tSecret..."
             Foreground="Gray"
             Margin="8,0,0,0"
-            Grid.Row="2" />
+             />
 
-        <Grid x:Name="Kurukuru" Visibility="Collapsed" Grid.Row="1" Background="#aaffffff">
+        <Grid x:Name="Kurukuru" Visibility="Collapsed" Grid.Row="2" Background="#aaffffff">
             <ProgressRing Height="48" Width="48" IsActive="True" />
         </Grid>
     </Grid>

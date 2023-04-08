@@ -96,8 +96,21 @@ namespace tSecretUwp
 
         private bool IsShow(Note rec)
         {
-            return (!rec.IsDeleted || IsShowDelete)
-&& (!rec.IsHome && !rec.IsWork && !IsShowHome && !IsShowWork || rec.IsHome && IsShowHome || rec.IsWork && IsShowWork);
+            var findText = textFind.Text.Trim();
+            if (findText.Length > 0)
+            {
+                if (rec.Caption.IndexOf(findText, StringComparison.OrdinalIgnoreCase) < 0
+                    && rec.AccountID.Trim().IndexOf(findText, StringComparison.OrdinalIgnoreCase) < 0
+                    && rec.Email.Trim().IndexOf(findText, StringComparison.OrdinalIgnoreCase) < 0
+                    && rec.CaptionRubi.Trim().IndexOf(findText, StringComparison.OrdinalIgnoreCase) < 0
+                )
+                {
+                    return false;
+                }
+            }
+            return
+                (!rec.IsHome && !rec.IsWork && !IsShowHome && !IsShowWork || rec.IsHome && IsShowHome || rec.IsWork && IsShowWork)
+                && (!rec.IsDeleted || IsShowDelete);
         }
 
         private void Refresh()
@@ -335,6 +348,16 @@ namespace tSecretUwp
             {
                 log($"Warning : Cancelled to {mi.Text} (no value)");
             }
+        }
+
+        private void textFind_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Refresh();
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            _ = textFind.Focus(FocusState.Keyboard);
         }
     }
 }
