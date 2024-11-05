@@ -36,11 +36,6 @@ namespace tSecretCommon
         public virtual string AuthorityAudience => "https://login.microsoftonline.com/common";
 
         /// <summary>
-        /// Public client redirect URI
-        /// </summary>
-        public virtual string PublicClientRedirectUri => "https://login.microsoftonline.com/common/oauth2/nativeclient";
-
-        /// <summary>
         /// Microsoft Graph API endpoint URI
         /// </summary>
         public virtual string GraphAPIEndpoint => "https://graph.microsoft.com/v1.0/me";

@@ -31,8 +31,7 @@ namespace tSecretUwp
                 IsAuthenticated = false;
                 clientApp = PublicClientApplicationBuilder.Create(param.AzureADClientId)
                         .WithAuthority(param.AuthorityAudience)
-                        .WithUseCorporateNetwork(true)
-                        .WithRedirectUri(param.PublicClientRedirectUri)
+                        .WithDefaultRedirectUri()
                         .Build();
             }
         }
@@ -72,7 +71,7 @@ namespace tSecretUwp
             var ret = false;
             try
             {
-                authResult = await clientApp.AcquireTokenInteractive(scopes)
+                authResult = await clientApp.AcquireTokenInteractive(scopes) // Win11になって、ここでエラー
                                             .ExecuteAsync(node.CTS.Token)
                                             .ConfigureAwait(false);
                 IsAuthenticated = true;

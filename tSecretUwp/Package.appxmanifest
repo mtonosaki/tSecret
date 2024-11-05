@@ -9,7 +9,7 @@
   <Identity
     Name="d2d05955-dc57-4646-b31c-5fd9d8cc6b33"
     Publisher="CN=ManabuTonosaki"
-    Version="2.0.2.0" />
+    Version="2.0.3.0" />
 
   <mp:PhoneIdentity PhoneProductId="d2d05955-dc57-4646-b31c-5fd9d8cc6b33" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
